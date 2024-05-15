@@ -3,6 +3,8 @@ package cau.se.issuemanagespring.domain;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
 
@@ -15,8 +17,10 @@ public class Comment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @CreationTimestamp
     private LocalDateTime createDate;
 
+    @LastModifiedDate
     private LocalDateTime updateDate;
 
     @Column(columnDefinition = "TEXT")
