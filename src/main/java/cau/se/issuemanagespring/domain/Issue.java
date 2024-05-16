@@ -3,6 +3,8 @@ package cau.se.issuemanagespring.domain;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -17,10 +19,13 @@ public class Issue {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(nullable = false)
     private String title;
 
+    @CreatedDate
     private LocalDateTime reportDate;
 
+    @LastModifiedDate
     private LocalDateTime updateDate;
 
     private LocalDateTime dueDate;
