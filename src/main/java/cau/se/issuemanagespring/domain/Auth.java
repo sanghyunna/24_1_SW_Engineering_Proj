@@ -7,13 +7,17 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-public class User {
+public class Auth {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
-    private String name;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(nullable = false, unique = true)
+    private User user;
+
+    @Column(nullable = false)
+    private String password;
 
 }
