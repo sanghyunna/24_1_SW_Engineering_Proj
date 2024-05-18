@@ -17,7 +17,7 @@ public class Issue {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @Column(nullable = false)
     private String title;
@@ -47,8 +47,5 @@ public class Issue {
 
     @Enumerated(EnumType.STRING)
     private Priority priority;
-
-    @OneToMany
-    private List<Comment> comments = new ArrayList<>();
 }
 

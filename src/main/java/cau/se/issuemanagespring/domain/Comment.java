@@ -15,7 +15,7 @@ public class Comment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @CreationTimestamp
     private LocalDateTime createDate;
@@ -25,6 +25,9 @@ public class Comment {
 
     @Column(columnDefinition = "TEXT")
     private String content;
+
+    @ManyToOne
+    private Issue issue;
 
     @ManyToOne
     private User commentOwner;
