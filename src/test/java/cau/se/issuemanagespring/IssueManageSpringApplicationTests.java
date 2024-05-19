@@ -7,7 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 class IssueManageSpringApplicationTests {
 
     @Test
-    void contextLoads() {
+    void issueSearch() {
     }
 
 }
