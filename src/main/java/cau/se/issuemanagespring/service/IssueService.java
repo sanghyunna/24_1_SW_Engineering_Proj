@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class IssueService {
@@ -22,8 +23,8 @@ public class IssueService {
     @Autowired
     private UserRepository userRepository;
 
-    public Issue create(IssueRequest issueRequest) {
-        if (issueRequest.getTitle() == null || issueRequest.getDueDate() == null || issueRequest.getContent() == null || issueRequest.getReporterName() == null) {
+    public Issue create(IssueRequest issueRequest, String authUser) {
+        if (issueRequest.getTitle() == null || issueRequest.getDueDate() == null || issueRequest.getContent() == null) {
             return null;
         }
 
@@ -31,11 +32,17 @@ public class IssueService {
         issue.setTitle(issueRequest.getTitle());
         issue.setDueDate(LocalDateTime.parse(issueRequest.getDueDate(), DateTimeFormatter.ISO_DATE_TIME));
         issue.setContent(issueRequest.getContent());
-        issue.setReporter(userRepository.findByName(issueRequest.getReporterName()));
-        issue.setAssignee(getUsersByUsernames(issueRequest.getAssigneeNameArray()));
+        issue.setReporter(userRepository.findByName(authUser).orElseThrow());
 
-        issue.setFixer(userRepository.findByName(issueRequest.getFixerName()));
-        issue.setStatus(Status.valueOf("NEW"));
+        List<User> users = getUsersByUsernames(issueRequest.getAssigneeNameArray());
+        issue.setAssignee(users);
+
+        if (users.isEmpty()) {
+            issue.setStatus(Status.NEW);
+        }
+        else {
+            issue.setStatus(Status.ASSIGNED);
+        }
         issue.setPriority(Priority.valueOf((issueRequest.getPriorityName() == null) ? "MAJOR" : issueRequest.getPriorityName()));
 
         return issueRepository.save(issue);
@@ -49,11 +56,16 @@ public class IssueService {
         return issueRepository.findById(id).orElse(null);
     }
 
-    public Issue update(Long issueId, IssueRequest issueRequest) {
+    public Issue update(Long issueId, IssueRequest issueRequest, String authUser) {
         Issue issue = issueRepository.findById(issueId).orElse(null);
         if (issue == null) {
             return null;
         }
+
+//        // issue 작성자 일치 여부 판단
+//        if (!Objects.equals(issue.getReporter().getName(), authUser)) {
+//            return null;
+//        }
 
         if (issueRequest.getTitle() != null) {
             issue.setTitle(issueRequest.getTitle());
@@ -65,11 +77,10 @@ public class IssueService {
             issue.setContent(issueRequest.getContent());
         }
         if (issueRequest.getAssigneeNameArray() != null) {
+            if (issue.getAssignee().isEmpty() && issue.getStatus() == Status.NEW) {
+                issue.setStatus(Status.ASSIGNED);
+            }
             issue.setAssignee(getUsersByUsernames(issueRequest.getAssigneeNameArray()));
-            // 이슈 상태 new -> assigned 변경하는 로직 필요
-        }
-        if (issueRequest.getFixerName() != null) {
-            issue.setFixer(userRepository.findByName(issueRequest.getFixerName()));
         }
         if (issueRequest.getPriorityName() != null) {
             issue.setPriority(Priority.valueOf(issueRequest.getPriorityName()));
@@ -78,14 +89,21 @@ public class IssueService {
         return issueRepository.save(issue);
     }
 
-    public Issue updateStatus(Long issueId, IssueStatusRequest issueStatusRequest) {
+    public Issue updateStatus(Long issueId, IssueStatusRequest issueStatusRequest, String authUser) {
         Issue issue = issueRepository.findById(issueId).orElse(null);
         if (issue == null) {
             return null;
         }
 
+//        // issue 작성자 일치 여부 판단
+//        if (!Objects.equals(issue.getReporter().getName(), authUser)) {
+//            return null;
+//        }
+
         if (issueStatusRequest.getStatusName() != null) {
-            // fixed로 바꿨을 때 바꾼 사람을 fixer로 등록하는 로직 필요
+            if (issueStatusRequest.getStatusName().equals("FIXED")) {
+                issue.setFixer(userRepository.findByName(authUser).orElseThrow());
+            }
             issue.setStatus(Status.valueOf(issueStatusRequest.getStatusName()));
         }
 
@@ -98,7 +116,7 @@ public class IssueService {
             return new ArrayList<>();
         }
         for (String username: usernames) {
-            User user = userRepository.findByName(username);
+            User user = userRepository.findByName(username).orElse(null);
             if (user != null) {
                 users.add(user);
             }

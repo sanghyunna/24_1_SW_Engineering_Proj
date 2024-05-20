@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class IssueStatusRequest {
-    private String statusName;
+public class TokenResponse {
+    private String name;
     private String token;
 }

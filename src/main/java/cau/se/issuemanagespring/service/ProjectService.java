@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class ProjectService {
@@ -20,14 +21,14 @@ public class ProjectService {
     @Autowired
     private UserRepository userRepository;
 
-    public Project create(ProjectRequest projectRequest) {
-        if (projectRequest.getTitle() == null || projectRequest.getOwnerName() == null) {
+    public Project create(ProjectRequest projectRequest, String authUser) {
+        if (projectRequest.getTitle() == null) {
             return null;
         }
 
         Project project = new Project();
         project.setTitle(projectRequest.getTitle());
-        project.setProjectOwner(userRepository.findByName(projectRequest.getOwnerName()));
+        project.setProjectOwner(userRepository.findByName(authUser).orElseThrow());
         project.setPLs(getUsersByUsernames(projectRequest.getPLNameArray()));
         project.setDevs(getUsersByUsernames(projectRequest.getDevNameArray()));
         project.setTesters(getUsersByUsernames(projectRequest.getTesterNameArray()));
@@ -43,9 +44,14 @@ public class ProjectService {
         return projectRepository.findById(id).orElse(null);
     }
 
-    public Project update(Long updateId, ProjectRequest projectRequest) {
+    public Project update(Long updateId, ProjectRequest projectRequest, String authUser) {
         Project project = projectRepository.findById(updateId).orElse(null);
         if (project == null) {
+            return null;
+        }
+
+        // project 작성자 일치 여부 판단
+        if (!Objects.equals(project.getProjectOwner().getName(), authUser)) {
             return null;
         }
 
@@ -71,7 +77,7 @@ public class ProjectService {
             return new ArrayList<>();
         }
         for (String username: usernames) {
-            User user = userRepository.findByName(username);
+            User user = userRepository.findByName(username).orElse(null);
             if (user != null) {
                 users.add(user);
             }

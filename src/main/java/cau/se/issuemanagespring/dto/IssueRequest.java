@@ -13,8 +13,7 @@ public class IssueRequest {
     private String title;
     private String dueDate;
     private String content;
-    private String reporterName;
     private List<String> assigneeNameArray;
-    private String fixerName;
     private String priorityName;
+    private String token;
 }

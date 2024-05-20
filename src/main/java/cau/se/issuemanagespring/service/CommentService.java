@@ -24,16 +24,16 @@ public class CommentService {
     @Autowired
     private UserRepository userRepository;
 
-    public Comment create(CommentRequest commentRequest, Long issueId) {
+    public Comment create(CommentRequest commentRequest, Long issueId, String authUser) {
         Issue issue = issueRepository.findById(issueId).orElse(null);
-        if (issue == null || commentRequest.getContent() == null || commentRequest.getCommentOwnerName() == null) {
+        if (issue == null || commentRequest.getContent() == null) {
             return null;
         }
 
         Comment comment = new Comment();
         comment.setContent(commentRequest.getContent());
         comment.setIssue(issue);
-        comment.setCommentOwner(userRepository.findByName(commentRequest.getCommentOwnerName()));
+        comment.setCommentOwner(userRepository.findByName(authUser).orElseThrow());
 
         return commentRepository.save(comment);
     }
@@ -42,9 +42,14 @@ public class CommentService {
         return commentRepository.findAllByIssueId(issueId);
     }
 
-    public Comment update(Long issueId, Long commentId, CommentRequest commentRequest) {
+    public Comment update(Long issueId, Long commentId, CommentRequest commentRequest, String authUser) {
         Comment comment = commentRepository.findById(commentId).orElse(null);
         if (comment == null || !Objects.equals(comment.getIssue().getId(), issueId)) {
+            return null;
+        }
+
+        // comment 작성자 일치 여부 판단
+        if (!Objects.equals(comment.getCommentOwner().getName(), authUser)) {
             return null;
         }
 

@@ -2,6 +2,7 @@ package cau.se.issuemanagespring.controller;
 
 import cau.se.issuemanagespring.domain.Project;
 import cau.se.issuemanagespring.dto.ProjectRequest;
+import cau.se.issuemanagespring.service.AuthService;
 import cau.se.issuemanagespring.service.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,9 +18,18 @@ public class ProjectController {
     @Autowired
     private ProjectService projectService;
 
+    @Autowired
+    private AuthService authService;
+
     @PostMapping
     public ResponseEntity<Project> createProject(@RequestBody ProjectRequest projectRequest) {
-        Project createdProject = projectService.create(projectRequest);
+        // token 검증
+        String authUser = authService.authenticate(projectRequest.getToken());
+        if (authUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Project createdProject = projectService.create(projectRequest, authUser);
         if (createdProject == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
@@ -43,10 +53,17 @@ public class ProjectController {
 
     @PatchMapping("/{projectId}")
     public ResponseEntity<Project> updateProject(@PathVariable Long projectId, @RequestBody ProjectRequest projectRequest) {
-        Project updatedProject = projectService.update(projectId, projectRequest);
+        // token 검증
+        String authUser = authService.authenticate(projectRequest.getToken());
+        if (authUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Project updatedProject = projectService.update(projectId, projectRequest, authUser);
         if (updatedProject == null) {
             return ResponseEntity.notFound().build();
         }
+
         return ResponseEntity.ok().body(updatedProject);
     }
 }
