@@ -48,12 +48,12 @@ public class GetAllIssues {
     	Issue issue1 = new Issue();
     	issue1.setId(1L);
     	issue1.setTitle("Issue 1");
-    	issue1.setStatus(Status.NEW);
+    	issue1.setStatus(Status.ASSIGNED);
     	
     	Issue issue2 = new Issue();
     	issue2.setId(2L);
     	issue2.setTitle("Issue 2");
-    	issue2.setStatus(Status.ASSIGNED);
+    	issue2.setStatus(Status.NEW);
     	
     	Issue issue3 = new Issue();
     	issue3.setId(3L);
@@ -71,7 +71,7 @@ public class GetAllIssues {
             .andExpect(jsonPath("$[0].title", is("Issue 1")))
             .andExpect(jsonPath("$[1].title", is("Issue 2")))
             
-            .andExpect(jsonPath("$[1].status", is("ASSIGNED")))
+            .andExpect(jsonPath("$[1].status", is("NEW")))
             .andExpect(jsonPath("$[2].status", is("CLOSED")))
             
             .andExpect(jsonPath("$", hasSize(3)));

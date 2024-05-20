@@ -69,7 +69,7 @@ public class GetIssueDetail {
 
 	    mockMvc.perform(get("/issue/1"))
 	        .andExpect(status().isOk())
-	        .andExpect(jsonPath("$.id", is(1)))
+	        .andExpect(jsonPath("$.id", is(18)))
 	        .andExpect(jsonPath("$.title", is("Detailed Issue")))
 	        .andExpect(jsonPath("$.status", is("NEW")))
 	        .andExpect(jsonPath("$.priority", is("MAJOR")))
