@@ -16,6 +16,12 @@ INSERT INTO user (name) VALUES ('bob');
 INSERT INTO user (name) VALUES ('alice');
 INSERT INTO user (name) VALUES ('tom');
 
+INSERT INTO auth (user_id, password) VALUES (1, 'password1');
+INSERT INTO auth (user_id, password) VALUES (2, 'password2');
+INSERT INTO auth (user_id, password) VALUES (3, 'password3');
+INSERT INTO auth (user_id, password) VALUES (4, 'password4');
+INSERT INTO auth (user_id, password) VALUES (5, 'password5');
+
 -- Projects
 INSERT INTO project (title, create_date, update_date, project_owner_id) VALUES ('Project A', '2023-05-18T10:00:00', '2023-05-18T10:00:00', 1);
 INSERT INTO project (title, create_date, update_date, project_owner_id) VALUES ('Project B', '2023-05-18T11:00:00', '2023-05-18T11:00:00', 2);

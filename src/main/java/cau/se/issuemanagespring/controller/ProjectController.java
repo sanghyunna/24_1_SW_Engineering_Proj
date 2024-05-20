@@ -20,6 +20,9 @@ public class ProjectController {
     @PostMapping
     public ResponseEntity<Project> createProject(@RequestBody ProjectRequest projectRequest) {
         Project createdProject = projectService.create(projectRequest);
+        if (createdProject == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
         return ResponseEntity.status(HttpStatus.CREATED).body(createdProject);
     }
 
@@ -36,5 +39,14 @@ public class ProjectController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.status(HttpStatus.OK).body(project);
+    }
+
+    @PatchMapping("/{projectId}")
+    public ResponseEntity<Project> updateProject(@PathVariable Long projectId, @RequestBody ProjectRequest projectRequest) {
+        Project updatedProject = projectService.update(projectId, projectRequest);
+        if (updatedProject == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok().body(updatedProject);
     }
 }
