@@ -20,6 +20,9 @@ public class UserController {
     @PostMapping
     public ResponseEntity<User> createUser(@RequestBody UserRequest userRequest) {
         User createdUser = userService.create(userRequest);
+        if (createdUser == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
 
@@ -27,6 +30,15 @@ public class UserController {
     public ResponseEntity<List<User>> getAllUsers() {
         List<User> users = userService.getAll();
         return ResponseEntity.ok().body(users);
+    }
+
+    @PatchMapping("/{userId}")
+    public ResponseEntity<User> updateUser(@PathVariable Long userId, @RequestBody UserRequest userRequest) {
+        User updatedUser = userService.update(userId, userRequest);
+        if (updatedUser == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        return ResponseEntity.ok().body(updatedUser);
     }
 
 }

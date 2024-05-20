@@ -21,10 +21,13 @@ public class ProjectService {
     private UserRepository userRepository;
 
     public Project create(ProjectRequest projectRequest) {
+        if (projectRequest.getTitle() == null || projectRequest.getOwnerName() == null) {
+            return null;
+        }
+
         Project project = new Project();
         project.setTitle(projectRequest.getTitle());
         project.setProjectOwner(userRepository.findByName(projectRequest.getOwnerName()));
-        System.out.println(projectRequest.getPLNameArray());
         project.setPLs(getUsersByUsernames(projectRequest.getPLNameArray()));
         project.setDevs(getUsersByUsernames(projectRequest.getDevNameArray()));
         project.setTesters(getUsersByUsernames(projectRequest.getTesterNameArray()));
@@ -38,6 +41,28 @@ public class ProjectService {
 
     public Project getById(Long id) {
         return projectRepository.findById(id).orElse(null);
+    }
+
+    public Project update(Long updateId, ProjectRequest projectRequest) {
+        Project project = projectRepository.findById(updateId).orElse(null);
+        if (project == null) {
+            return null;
+        }
+
+        if (projectRequest.getTitle() != null) {
+            project.setTitle(projectRequest.getTitle());
+        }
+        if (projectRequest.getPLNameArray() != null) {
+            project.setPLs(getUsersByUsernames(projectRequest.getPLNameArray()));
+        }
+        if (projectRequest.getDevNameArray() != null) {
+            project.setDevs(getUsersByUsernames(projectRequest.getDevNameArray()));
+        }
+        if (projectRequest.getTesterNameArray() != null) {
+            project.setTesters(getUsersByUsernames(projectRequest.getTesterNameArray()));
+        }
+
+        return projectRepository.save(project);
     }
 
     public List<User> getUsersByUsernames(List<String> usernames) {
