@@ -11,8 +11,8 @@ import java.util.List;
 @AllArgsConstructor
 public class ProjectRequest {
     private String title;
-    private String ownerName;
     private List<String> PLNameArray;
     private List<String> DevNameArray;
     private List<String> TesterNameArray;
+    private String token;
 }

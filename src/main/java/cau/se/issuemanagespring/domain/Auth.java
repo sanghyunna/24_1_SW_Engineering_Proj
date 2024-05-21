@@ -20,4 +20,6 @@ public class Auth {
     @Column(nullable = false)
     private String password;
 
+    private String token;
+
 }
