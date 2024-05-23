@@ -35,8 +35,9 @@ INSERT INTO project_pls (project_id, pls_id) VALUES (2, 3);
 INSERT INTO project_devs (project_id, devs_id) VALUES (2, 4), (2, 5);
 
 -- Issues'
-INSERT INTO issue (title, create_date, update_date, due_date, content, reporter_id, status, priority) VALUES ('Issue 1', '2023-05-18T12:00:00', '2023-05-18T12:00:00', '2023-05-25T12:00:00', 'This is issue 1', 1, 'NEW', 'MAJOR');
-INSERT INTO issue (title, create_date, update_date, due_date, content, reporter_id, status, priority) VALUES ('Issue 2', '2023-05-18T13:00:00', '2023-05-18T13:00:00', '2023-06-01T13:00:00', 'This is issue 2', 2, 'ASSIGNED', 'CRITICAL');
+INSERT INTO issue (title, create_date, update_date, due_date, content, project_id, reporter_id, status, priority) VALUES ('Issue 1', '2023-05-18T12:00:00', '2023-05-18T12:00:00', '2023-05-25T12:00:00', 'This is issue 1', 1, 1, 'ASSIGNED', 'MAJOR');
+INSERT INTO issue (title, create_date, update_date, due_date, content, project_id, reporter_id, status, priority) VALUES ('Issue 2', '2023-05-18T13:00:00', '2023-05-18T13:00:00', '2023-06-01T13:00:00', 'This is issue 2', 1, 2, 'ASSIGNED', 'CRITICAL');
+INSERT INTO issue (title, create_date, update_date, due_date, content, project_id, reporter_id, status, priority) VALUES ('Issue 3', '2023-05-18T14:00:00', '2023-05-18T14:00:00', '2023-06-01T14:00:00', 'This is issue 3', 2, 2, 'NEW', 'CRITICAL');
 
 -- Add assignees to issues
 INSERT INTO issue_assignee (issue_id, assignee_id) VALUES (1, 4);

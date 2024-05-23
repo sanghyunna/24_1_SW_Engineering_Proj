@@ -14,6 +14,7 @@ public class IssueResponse {
     private String title;
     private String dueDate;
     private String content;
+    private Long projectId;
     private String reporter;
     private List<String> assignee;
     private String fixer;

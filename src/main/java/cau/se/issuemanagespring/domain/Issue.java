@@ -26,6 +26,9 @@ public class Issue extends BaseTimeEntity{
     private String content;
 
     @ManyToOne
+    private Project project;
+
+    @ManyToOne
     private User reporter;
 
     @ManyToMany

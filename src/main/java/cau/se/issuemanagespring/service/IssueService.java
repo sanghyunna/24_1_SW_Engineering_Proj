@@ -5,6 +5,7 @@ import cau.se.issuemanagespring.dto.IssueRequest;
 import cau.se.issuemanagespring.dto.IssueResponse;
 import cau.se.issuemanagespring.dto.IssueStatusRequest;
 import cau.se.issuemanagespring.repository.IssueRepository;
+import cau.se.issuemanagespring.repository.ProjectRepository;
 import cau.se.issuemanagespring.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,10 +14,14 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
 public class IssueService {
+
+    @Autowired
+    private ProjectRepository projectRepository;
 
     @Autowired
     private IssueRepository issueRepository;
@@ -24,7 +29,11 @@ public class IssueService {
     @Autowired
     private UserRepository userRepository;
 
-    public IssueResponse create(IssueRequest issueRequest, String authUser) {
+    public IssueResponse create(Long projectId, IssueRequest issueRequest, String authUser) {
+        Project project = projectRepository.findById(projectId).orElse(null);
+        if (project == null) {
+            return null;
+        }
         if (issueRequest.getTitle() == null || issueRequest.getDueDate() == null || issueRequest.getContent() == null) {
             return null;
         }
@@ -33,6 +42,7 @@ public class IssueService {
         issue.setTitle(issueRequest.getTitle());
         issue.setDueDate(LocalDateTime.parse(issueRequest.getDueDate(), DateTimeFormatter.ISO_DATE_TIME));
         issue.setContent(issueRequest.getContent());
+        issue.setProject(project);
         issue.setReporter(userRepository.findByName(authUser).orElseThrow());
 
         List<User> users = getUsersByUsernames(issueRequest.getAssigneeNameArray());
@@ -49,17 +59,25 @@ public class IssueService {
         return getIssueResponse(issueRepository.save(issue));
     }
 
-    public List<IssueResponse> getAll() {
-        return getIssueResponseList(issueRepository.findAll());
+    public List<IssueResponse> getAll(Long projectId) {
+        List<Issue> issues = issueRepository.findAll()
+                .stream()
+                .filter(issue -> issue.getProject().getId().equals(projectId))
+                .toList();
+        return getIssueResponseList(issues);
     }
 
-    public IssueResponse getById(Long id) {
-        return getIssueResponse(issueRepository.findById(id).orElse(null));
+    public IssueResponse getById(Long projectId, Long id) {
+        Issue issue = issueRepository.findById(id).orElse(null);
+        if (issue == null || !Objects.equals(issue.getProject().getId(), projectId)) {
+            return null;
+        }
+        return getIssueResponse(issue);
     }
 
-    public IssueResponse update(Long issueId, IssueRequest issueRequest, String authUser) {
+    public IssueResponse update(Long projectId, Long issueId, IssueRequest issueRequest, String authUser) {
         Issue issue = issueRepository.findById(issueId).orElse(null);
-        if (issue == null) {
+        if (issue == null || !Objects.equals(issue.getProject().getId(), projectId)) {
             return null;
         }
 
@@ -90,21 +108,25 @@ public class IssueService {
         return getIssueResponse(issueRepository.save(issue));
     }
 
-    public List<IssueResponse> search(String keyword) {
+    public List<IssueResponse> search(Long projectId, String keyword) {
         if (keyword == null || keyword.isEmpty()) {
             return new ArrayList<>();
         }
-        return getIssueResponseList(issueRepository.searchIssues(keyword));
+        List<Issue> issues = issueRepository.searchIssues(keyword)
+                .stream()
+                .filter(issue -> issue.getProject().getId().equals(projectId))
+                .toList();
+        return getIssueResponseList(issues);
     }
 
-    public IssueResponse updateStatus(Long issueId, IssueStatusRequest issueStatusRequest, String authUser) {
+    public IssueResponse updateStatus(Long projectId, Long issueId, IssueStatusRequest issueStatusRequest, String authUser) {
         Issue issue = issueRepository.findById(issueId).orElse(null);
-        if (issue == null) {
+        if (issue == null || !Objects.equals(issue.getProject().getId(), projectId)) {
             return null;
         }
 
         if (issueStatusRequest.getStatusName() != null) {
-            if (issueStatusRequest.getStatusName().equals("FIXED")) {
+            if (issueStatusRequest.getStatusName().equals(Status.FIXED.toString())) {
                 issue.setFixer(userRepository.findByName(authUser).orElseThrow());
             }
             issue.setStatus(Status.valueOf(issueStatusRequest.getStatusName()));
@@ -138,6 +160,7 @@ public class IssueService {
                 .title(issue.getTitle())
                 .dueDate(issue.getDueDate().toString())
                 .content(issue.getContent())
+                .projectId(issue.getProject().getId())
                 .reporter(issue.getReporter().getName())
                 .assignee(issue.getAssignee().stream().map(User::getName).collect(Collectors.toList()))
                 .fixer(issue.getFixer() != null ? issue.getFixer().getName() : null)
