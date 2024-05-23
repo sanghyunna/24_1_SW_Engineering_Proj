@@ -1,7 +1,7 @@
 package cau.se.issuemanagespring.controller;
 
-import cau.se.issuemanagespring.domain.Project;
 import cau.se.issuemanagespring.dto.ProjectRequest;
+import cau.se.issuemanagespring.dto.ProjectResponse;
 import cau.se.issuemanagespring.service.AuthService;
 import cau.se.issuemanagespring.service.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,14 +22,14 @@ public class ProjectController {
     private AuthService authService;
 
     @PostMapping
-    public ResponseEntity<Project> createProject(@RequestBody ProjectRequest projectRequest) {
+    public ResponseEntity<ProjectResponse> createProject(@RequestBody ProjectRequest projectRequest) {
         // token 검증
         String authUser = authService.authenticate(projectRequest.getToken());
         if (authUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        Project createdProject = projectService.create(projectRequest, authUser);
+        ProjectResponse createdProject = projectService.create(projectRequest, authUser);
         if (createdProject == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
@@ -37,14 +37,14 @@ public class ProjectController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Project>> getAllProjects() {
-        List<Project> projects = projectService.getAll();
+    public ResponseEntity<List<ProjectResponse>> getAllProjects() {
+        List<ProjectResponse> projects = projectService.getAll();
         return ResponseEntity.ok().body(projects);
     }
 
     @GetMapping("/{projectId}")
-    public ResponseEntity<Project> getProject(@PathVariable Long projectId) {
-        Project project = projectService.getById(projectId);
+    public ResponseEntity<ProjectResponse> getProject(@PathVariable Long projectId) {
+        ProjectResponse project = projectService.getById(projectId);
         if (project == null) {
             return ResponseEntity.notFound().build();
         }
@@ -52,14 +52,14 @@ public class ProjectController {
     }
 
     @PatchMapping("/{projectId}")
-    public ResponseEntity<Project> updateProject(@PathVariable Long projectId, @RequestBody ProjectRequest projectRequest) {
+    public ResponseEntity<ProjectResponse> updateProject(@PathVariable Long projectId, @RequestBody ProjectRequest projectRequest) {
         // token 검증
         String authUser = authService.authenticate(projectRequest.getToken());
         if (authUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        Project updatedProject = projectService.update(projectId, projectRequest, authUser);
+        ProjectResponse updatedProject = projectService.update(projectId, projectRequest, authUser);
         if (updatedProject == null) {
             return ResponseEntity.notFound().build();
         }

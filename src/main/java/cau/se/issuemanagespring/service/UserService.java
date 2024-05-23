@@ -3,6 +3,7 @@ package cau.se.issuemanagespring.service;
 import cau.se.issuemanagespring.domain.Auth;
 import cau.se.issuemanagespring.domain.User;
 import cau.se.issuemanagespring.dto.UserRequest;
+import cau.se.issuemanagespring.dto.UserResponse;
 import cau.se.issuemanagespring.repository.AuthRepository;
 import cau.se.issuemanagespring.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -20,7 +22,7 @@ public class UserService {
     @Autowired
     private AuthRepository authRepository;
 
-    public User create(UserRequest userRequest) {
+    public UserResponse create(UserRequest userRequest) {
         if (userRequest.getName() == null || userRequest.getPassword() == null) {
             return null;
         }
@@ -35,14 +37,14 @@ public class UserService {
         auth.setToken("");
         authRepository.save(auth);
 
-        return user;
+        return getUserResponse(user);
     }
 
-    public List<User> getAll() {
-        return userRepository.findAll();
+    public List<UserResponse> getAll() {
+        return getUserResponseList(userRepository.findAll());
     }
 
-    public User update(Long userId, UserRequest userRequest) {
+    public UserResponse update(Long userId, UserRequest userRequest) {
         User user = userRepository.findById(userId).orElse(null);
         if (user == null) {
             return null;
@@ -58,6 +60,20 @@ public class UserService {
             authRepository.save(auth);
         }
 
-        return user;
+        return getUserResponse(user);
+    }
+
+    private UserResponse getUserResponse(User user) {
+        if (user == null) {
+            return null;
+        }
+        return UserResponse.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .build();
+    }
+
+    private List<UserResponse> getUserResponseList(List<User> users) {
+        return users.stream().map(this::getUserResponse).collect(Collectors.toList());
     }
 }

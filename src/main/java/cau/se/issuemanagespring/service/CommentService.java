@@ -3,6 +3,7 @@ package cau.se.issuemanagespring.service;
 import cau.se.issuemanagespring.domain.Comment;
 import cau.se.issuemanagespring.domain.Issue;
 import cau.se.issuemanagespring.dto.CommentRequest;
+import cau.se.issuemanagespring.dto.CommentResponse;
 import cau.se.issuemanagespring.repository.CommentRepository;
 import cau.se.issuemanagespring.repository.IssueRepository;
 import cau.se.issuemanagespring.repository.UserRepository;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class CommentService {
@@ -24,7 +26,7 @@ public class CommentService {
     @Autowired
     private UserRepository userRepository;
 
-    public Comment create(CommentRequest commentRequest, Long issueId, String authUser) {
+    public CommentResponse create(CommentRequest commentRequest, Long issueId, String authUser) {
         Issue issue = issueRepository.findById(issueId).orElse(null);
         if (issue == null || commentRequest.getContent() == null) {
             return null;
@@ -35,14 +37,14 @@ public class CommentService {
         comment.setIssue(issue);
         comment.setCommentOwner(userRepository.findByName(authUser).orElseThrow());
 
-        return commentRepository.save(comment);
+        return getCommentResponse(commentRepository.save(comment));
     }
 
-    public List<Comment> getAllByIssueId(Long issueId) {
-        return commentRepository.findAllByIssueId(issueId);
+    public List<CommentResponse> getAllByIssueId(Long issueId) {
+        return getCommentResponseList(commentRepository.findAllByIssueId(issueId));
     }
 
-    public Comment update(Long issueId, Long commentId, CommentRequest commentRequest, String authUser) {
+    public CommentResponse update(Long issueId, Long commentId, CommentRequest commentRequest, String authUser) {
         Comment comment = commentRepository.findById(commentId).orElse(null);
         if (comment == null || !Objects.equals(comment.getIssue().getId(), issueId)) {
             return null;
@@ -57,6 +59,24 @@ public class CommentService {
             comment.setContent(commentRequest.getContent());
         }
 
-        return commentRepository.save(comment);
+        return getCommentResponse(commentRepository.save(comment));
+    }
+
+    private CommentResponse getCommentResponse(Comment comment) {
+        if (comment == null) {
+            return null;
+        }
+        return CommentResponse.builder()
+                .id(comment.getId())
+                .createDate(comment.getCreateDate().toString())
+                .updateDate(comment.getUpdateDate().toString())
+                .content(comment.getContent())
+                .issueId(comment.getIssue().getId())
+                .commentOwner(comment.getCommentOwner().getName())
+                .build();
+    }
+
+    private List<CommentResponse> getCommentResponseList(List<Comment> comments) {
+        return comments.stream().map(this::getCommentResponse).collect(Collectors.toList());
     }
 }

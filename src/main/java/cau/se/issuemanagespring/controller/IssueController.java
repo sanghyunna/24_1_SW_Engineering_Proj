@@ -1,10 +1,6 @@
 package cau.se.issuemanagespring.controller;
 
-import cau.se.issuemanagespring.domain.Comment;
-import cau.se.issuemanagespring.domain.Issue;
-import cau.se.issuemanagespring.dto.CommentRequest;
-import cau.se.issuemanagespring.dto.IssueRequest;
-import cau.se.issuemanagespring.dto.IssueStatusRequest;
+import cau.se.issuemanagespring.dto.*;
 import cau.se.issuemanagespring.service.AuthService;
 import cau.se.issuemanagespring.service.CommentService;
 import cau.se.issuemanagespring.service.IssueService;
@@ -29,14 +25,14 @@ public class IssueController {
     private AuthService authService;
 
     @PostMapping
-    public ResponseEntity<Issue> createIssue(@RequestBody IssueRequest issueRequest) {
+    public ResponseEntity<IssueResponse> createIssue(@RequestBody IssueRequest issueRequest) {
         // token 검증
         String authUser = authService.authenticate(issueRequest.getToken());
         if (authUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        Issue createdIssue = issueService.create(issueRequest, authUser);
+        IssueResponse createdIssue = issueService.create(issueRequest, authUser);
         if (createdIssue == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
@@ -44,13 +40,18 @@ public class IssueController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Issue>> getAllIssues() {
+    public ResponseEntity<List<IssueResponse>> getAllIssues() {
         return ResponseEntity.ok().body(issueService.getAll());
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<IssueResponse>> searchIssues(@RequestParam String keyword) {
+        return ResponseEntity.ok().body(issueService.search(keyword));
+    }
+
     @GetMapping("/{issueId}")
-    public ResponseEntity<Issue> getIssueById(@PathVariable("issueId") Long issueId) {
-        Issue issue = issueService.getById(issueId);
+    public ResponseEntity<IssueResponse> getIssueById(@PathVariable("issueId") Long issueId) {
+        IssueResponse issue = issueService.getById(issueId);
         if (issue == null) {
             return ResponseEntity.notFound().build();
         }
@@ -58,14 +59,14 @@ public class IssueController {
     }
 
     @PatchMapping("/{issueId}")
-    public ResponseEntity<Issue> updateIssue(@PathVariable("issueId") Long issueId, @RequestBody IssueRequest issueRequest) {
+    public ResponseEntity<IssueResponse> updateIssue(@PathVariable("issueId") Long issueId, @RequestBody IssueRequest issueRequest) {
         // token 검증
         String authUser = authService.authenticate(issueRequest.getToken());
         if (authUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        Issue updatedIssue = issueService.update(issueId, issueRequest, authUser);
+        IssueResponse updatedIssue = issueService.update(issueId, issueRequest, authUser);
         if (updatedIssue == null) {
             return ResponseEntity.notFound().build();
         }
@@ -73,14 +74,14 @@ public class IssueController {
     }
 
     @PatchMapping("/{issueId}/status")
-    public ResponseEntity<Issue> updateIssueStatus(@PathVariable("issueId") Long issueId, @RequestBody IssueStatusRequest issueStatusRequest) {
+    public ResponseEntity<IssueResponse> updateIssueStatus(@PathVariable("issueId") Long issueId, @RequestBody IssueStatusRequest issueStatusRequest) {
         // token 검증
         String authUser = authService.authenticate(issueStatusRequest.getToken());
         if (authUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        Issue updatedIssue = issueService.updateStatus(issueId, issueStatusRequest, authUser);
+        IssueResponse updatedIssue = issueService.updateStatus(issueId, issueStatusRequest, authUser);
         if (updatedIssue == null) {
             return ResponseEntity.notFound().build();
         }
@@ -88,14 +89,14 @@ public class IssueController {
     }
 
     @PostMapping("/{issueId}/comment")
-    public ResponseEntity<Comment> createComment(@PathVariable("issueId") Long issueId, @RequestBody CommentRequest commentRequest) {
+    public ResponseEntity<CommentResponse> createComment(@PathVariable("issueId") Long issueId, @RequestBody CommentRequest commentRequest) {
         // token 검증
         String authUser = authService.authenticate(commentRequest.getToken());
         if (authUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        Comment createdComment = commentService.create(commentRequest, issueId, authUser);
+        CommentResponse createdComment = commentService.create(commentRequest, issueId, authUser);
         if (createdComment == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
@@ -103,20 +104,20 @@ public class IssueController {
     }
 
     @GetMapping("/{issueId}/comment")
-    public ResponseEntity<List<Comment>> getComments(@PathVariable("issueId") Long issueId) {
-        List<Comment> comments = commentService.getAllByIssueId(issueId);
+    public ResponseEntity<List<CommentResponse>> getComments(@PathVariable("issueId") Long issueId) {
+        List<CommentResponse> comments = commentService.getAllByIssueId(issueId);
         return ResponseEntity.ok().body(comments);
     }
 
     @PatchMapping("/{issueId}/comment/{commentId}")
-    public ResponseEntity<Comment> updateComment(@PathVariable("issueId") Long issueId, @PathVariable("commentId") Long commentId, @RequestBody CommentRequest commentRequest) {
+    public ResponseEntity<CommentResponse> updateComment(@PathVariable("issueId") Long issueId, @PathVariable("commentId") Long commentId, @RequestBody CommentRequest commentRequest) {
         // token 검증
         String authUser = authService.authenticate(commentRequest.getToken());
         if (authUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        Comment updatedComment = commentService.update(issueId, commentId, commentRequest, authUser);
+        CommentResponse updatedComment = commentService.update(issueId, commentId, commentRequest, authUser);
         if (updatedComment == null) {
             return ResponseEntity.notFound().build();
         }

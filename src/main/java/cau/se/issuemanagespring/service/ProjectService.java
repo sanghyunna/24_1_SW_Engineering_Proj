@@ -3,6 +3,7 @@ package cau.se.issuemanagespring.service;
 import cau.se.issuemanagespring.domain.Project;
 import cau.se.issuemanagespring.domain.User;
 import cau.se.issuemanagespring.dto.ProjectRequest;
+import cau.se.issuemanagespring.dto.ProjectResponse;
 import cau.se.issuemanagespring.repository.ProjectRepository;
 import cau.se.issuemanagespring.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class ProjectService {
@@ -21,7 +23,7 @@ public class ProjectService {
     @Autowired
     private UserRepository userRepository;
 
-    public Project create(ProjectRequest projectRequest, String authUser) {
+    public ProjectResponse create(ProjectRequest projectRequest, String authUser) {
         if (projectRequest.getTitle() == null) {
             return null;
         }
@@ -33,18 +35,18 @@ public class ProjectService {
         project.setDevs(getUsersByUsernames(projectRequest.getDevNameArray()));
         project.setTesters(getUsersByUsernames(projectRequest.getTesterNameArray()));
 
-        return projectRepository.save(project);
+        return getProjectResponse(projectRepository.save(project));
     }
 
-    public List<Project> getAll() {
-        return projectRepository.findAll();
+    public List<ProjectResponse> getAll() {
+        return getProjectResponseList(projectRepository.findAll());
     }
 
-    public Project getById(Long id) {
-        return projectRepository.findById(id).orElse(null);
+    public ProjectResponse getById(Long id) {
+        return getProjectResponse(projectRepository.findById(id).orElse(null));
     }
 
-    public Project update(Long updateId, ProjectRequest projectRequest, String authUser) {
+    public ProjectResponse update(Long updateId, ProjectRequest projectRequest, String authUser) {
         Project project = projectRepository.findById(updateId).orElse(null);
         if (project == null) {
             return null;
@@ -68,10 +70,10 @@ public class ProjectService {
             project.setTesters(getUsersByUsernames(projectRequest.getTesterNameArray()));
         }
 
-        return projectRepository.save(project);
+        return getProjectResponse(projectRepository.save(project));
     }
 
-    public List<User> getUsersByUsernames(List<String> usernames) {
+    private List<User> getUsersByUsernames(List<String> usernames) {
         List<User> users = new ArrayList<>();
         if (usernames == null) {
             return new ArrayList<>();
@@ -83,5 +85,25 @@ public class ProjectService {
             }
         }
         return users;
+    }
+
+    private ProjectResponse getProjectResponse(Project project) {
+        if (project == null) {
+            return null;
+        }
+        return ProjectResponse.builder()
+                .id(project.getId())
+                .createDate(project.getCreateDate().toString())
+                .updateDate(project.getUpdateDate().toString())
+                .title(project.getTitle())
+                .projectOwner(project.getProjectOwner().getName())
+                .PL(project.getPLs().stream().map(User::getName).collect(Collectors.toList()))
+                .Dev(project.getDevs().stream().map(User::getName).collect(Collectors.toList()))
+                .Tester(project.getTesters().stream().map(User::getName).collect(Collectors.toList()))
+                .build();
+    }
+
+    private List<ProjectResponse> getProjectResponseList(List<Project> projects) {
+        return projects.stream().map(this::getProjectResponse).collect(Collectors.toList());
     }
 }

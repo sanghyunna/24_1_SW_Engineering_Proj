@@ -2,6 +2,7 @@ package cau.se.issuemanagespring.service;
 
 import cau.se.issuemanagespring.domain.*;
 import cau.se.issuemanagespring.dto.IssueRequest;
+import cau.se.issuemanagespring.dto.IssueResponse;
 import cau.se.issuemanagespring.dto.IssueStatusRequest;
 import cau.se.issuemanagespring.repository.IssueRepository;
 import cau.se.issuemanagespring.repository.UserRepository;
@@ -12,7 +13,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class IssueService {
@@ -23,7 +24,7 @@ public class IssueService {
     @Autowired
     private UserRepository userRepository;
 
-    public Issue create(IssueRequest issueRequest, String authUser) {
+    public IssueResponse create(IssueRequest issueRequest, String authUser) {
         if (issueRequest.getTitle() == null || issueRequest.getDueDate() == null || issueRequest.getContent() == null) {
             return null;
         }
@@ -43,20 +44,20 @@ public class IssueService {
         else {
             issue.setStatus(Status.ASSIGNED);
         }
-        issue.setPriority(Priority.valueOf((issueRequest.getPriorityName() == null) ? "MAJOR" : issueRequest.getPriorityName()));
+        issue.setPriority(Priority.valueOf((issueRequest.getPriority() == null) ? "MAJOR" : issueRequest.getPriority()));
 
-        return issueRepository.save(issue);
+        return getIssueResponse(issueRepository.save(issue));
     }
 
-    public List<Issue> getAll() {
-        return issueRepository.findAll();
+    public List<IssueResponse> getAll() {
+        return getIssueResponseList(issueRepository.findAll());
     }
 
-    public Issue getById(Long id) {
-        return issueRepository.findById(id).orElse(null);
+    public IssueResponse getById(Long id) {
+        return getIssueResponse(issueRepository.findById(id).orElse(null));
     }
 
-    public Issue update(Long issueId, IssueRequest issueRequest, String authUser) {
+    public IssueResponse update(Long issueId, IssueRequest issueRequest, String authUser) {
         Issue issue = issueRepository.findById(issueId).orElse(null);
         if (issue == null) {
             return null;
@@ -82,23 +83,25 @@ public class IssueService {
             }
             issue.setAssignee(getUsersByUsernames(issueRequest.getAssigneeNameArray()));
         }
-        if (issueRequest.getPriorityName() != null) {
-            issue.setPriority(Priority.valueOf(issueRequest.getPriorityName()));
+        if (issueRequest.getPriority() != null) {
+            issue.setPriority(Priority.valueOf(issueRequest.getPriority()));
         }
 
-        return issueRepository.save(issue);
+        return getIssueResponse(issueRepository.save(issue));
     }
 
-    public Issue updateStatus(Long issueId, IssueStatusRequest issueStatusRequest, String authUser) {
+    public List<IssueResponse> search(String keyword) {
+        if (keyword == null || keyword.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return getIssueResponseList(issueRepository.searchIssues(keyword));
+    }
+
+    public IssueResponse updateStatus(Long issueId, IssueStatusRequest issueStatusRequest, String authUser) {
         Issue issue = issueRepository.findById(issueId).orElse(null);
         if (issue == null) {
             return null;
         }
-
-//        // issue 작성자 일치 여부 판단
-//        if (!Objects.equals(issue.getReporter().getName(), authUser)) {
-//            return null;
-//        }
 
         if (issueStatusRequest.getStatusName() != null) {
             if (issueStatusRequest.getStatusName().equals("FIXED")) {
@@ -107,7 +110,7 @@ public class IssueService {
             issue.setStatus(Status.valueOf(issueStatusRequest.getStatusName()));
         }
 
-        return issueRepository.save(issue);
+        return getIssueResponse(issueRepository.save(issue));
     }
 
     private List<User> getUsersByUsernames(List<String> usernames) {
@@ -122,5 +125,28 @@ public class IssueService {
             }
         }
         return users;
+    }
+
+    private IssueResponse getIssueResponse(Issue issue) {
+        if (issue == null) {
+            return null;
+        }
+        return IssueResponse.builder()
+                .id(issue.getId())
+                .createDate(issue.getCreateDate().toString())
+                .updateDate(issue.getUpdateDate().toString())
+                .title(issue.getTitle())
+                .dueDate(issue.getDueDate().toString())
+                .content(issue.getContent())
+                .reporter(issue.getReporter().getName())
+                .assignee(issue.getAssignee().stream().map(User::getName).collect(Collectors.toList()))
+                .fixer(issue.getFixer() != null ? issue.getFixer().getName() : null)
+                .status(issue.getStatus().toString())
+                .priority(issue.getPriority().toString())
+                .build();
+    }
+
+    private List<IssueResponse> getIssueResponseList(List<Issue> issues) {
+        return issues.stream().map(this::getIssueResponse).collect(Collectors.toList());
     }
 }

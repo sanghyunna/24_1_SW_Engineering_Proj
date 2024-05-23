@@ -1,7 +1,7 @@
 package cau.se.issuemanagespring.controller;
 
-import cau.se.issuemanagespring.domain.User;
 import cau.se.issuemanagespring.dto.UserRequest;
+import cau.se.issuemanagespring.dto.UserResponse;
 import cau.se.issuemanagespring.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,8 +18,8 @@ public class UserController {
     private UserService userService;
 
     @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody UserRequest userRequest) {
-        User createdUser = userService.create(userRequest);
+    public ResponseEntity<UserResponse> createUser(@RequestBody UserRequest userRequest) {
+        UserResponse createdUser = userService.create(userRequest);
         if (createdUser == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
@@ -27,14 +27,14 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<List<User>> getAllUsers() {
-        List<User> users = userService.getAll();
+    public ResponseEntity<List<UserResponse>> getAllUsers() {
+        List<UserResponse> users = userService.getAll();
         return ResponseEntity.ok().body(users);
     }
 
     @PatchMapping("/{userId}")
-    public ResponseEntity<User> updateUser(@PathVariable Long userId, @RequestBody UserRequest userRequest) {
-        User updatedUser = userService.update(userId, userRequest);
+    public ResponseEntity<UserResponse> updateUser(@PathVariable Long userId, @RequestBody UserRequest userRequest) {
+        UserResponse updatedUser = userService.update(userId, userRequest);
         if (updatedUser == null) {
             return ResponseEntity.notFound().build();
         }
