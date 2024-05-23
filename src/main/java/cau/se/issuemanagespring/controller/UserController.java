@@ -17,6 +17,11 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    /**
+     * User를 생성합니다. 생성된 User를 반환합니다.
+     * @param userRequest name, password, token
+     * @return UserResponse
+     */
     @PostMapping
     public ResponseEntity<UserResponse> createUser(@RequestBody UserRequest userRequest) {
         UserResponse createdUser = userService.create(userRequest);
@@ -26,12 +31,22 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
 
+    /**
+     * 모든 User를 반환합니다.
+     * @return UserResponse의 List
+     */
     @GetMapping
     public ResponseEntity<List<UserResponse>> getAllUsers() {
         List<UserResponse> users = userService.getAll();
         return ResponseEntity.ok().body(users);
     }
 
+    /**
+     * userId에 해당하는 User를 수정합니다. 수정된 User를 반환합니다.
+     * @param userId User의 ID
+     * @param userRequest name, password, token
+     * @return UserResponse
+     */
     @PatchMapping("/{userId}")
     public ResponseEntity<UserResponse> updateUser(@PathVariable Long userId, @RequestBody UserRequest userRequest) {
         UserResponse updatedUser = userService.update(userId, userRequest);

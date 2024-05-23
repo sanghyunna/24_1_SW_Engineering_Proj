@@ -21,6 +21,11 @@ public class ProjectController {
     @Autowired
     private AuthService authService;
 
+    /**
+     * Project를 생성합니다. 생성된 Project를 반환합니다.
+     * @param projectRequest title, PLNameArray, DevNameArray, TesterNameArray, token
+     * @return ProjectResponse
+     */
     @PostMapping
     public ResponseEntity<ProjectResponse> createProject(@RequestBody ProjectRequest projectRequest) {
         // token 검증
@@ -36,12 +41,21 @@ public class ProjectController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdProject);
     }
 
+    /**
+     * 모든 Project를 반환합니다.
+     * @return ProjectResponse의 List
+     */
     @GetMapping
     public ResponseEntity<List<ProjectResponse>> getAllProjects() {
         List<ProjectResponse> projects = projectService.getAll();
         return ResponseEntity.ok().body(projects);
     }
 
+    /**
+     * projectId에 해당하는 Project를 반환합니다.
+     * @param projectId Project의 ID
+     * @return ProjectResponse
+     */
     @GetMapping("/{projectId}")
     public ResponseEntity<ProjectResponse> getProject(@PathVariable Long projectId) {
         ProjectResponse project = projectService.getById(projectId);
@@ -51,6 +65,12 @@ public class ProjectController {
         return ResponseEntity.status(HttpStatus.OK).body(project);
     }
 
+    /**
+     * projectId에 해당하는 Project를 수정합니다. 수정된 Project를 반환합니다.
+     * @param projectId Project의 ID
+     * @param projectRequest title, PLNameArray, DevNameArray, TesterNameArray, token(필수)
+     * @return ProjectResponse
+     */
     @PatchMapping("/{projectId}")
     public ResponseEntity<ProjectResponse> updateProject(@PathVariable Long projectId, @RequestBody ProjectRequest projectRequest) {
         // token 검증
