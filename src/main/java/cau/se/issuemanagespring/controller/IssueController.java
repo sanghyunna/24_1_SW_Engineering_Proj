@@ -1,10 +1,6 @@
 package cau.se.issuemanagespring.controller;
 
-import cau.se.issuemanagespring.domain.Comment;
-import cau.se.issuemanagespring.domain.Issue;
-import cau.se.issuemanagespring.dto.CommentRequest;
-import cau.se.issuemanagespring.dto.IssueRequest;
-import cau.se.issuemanagespring.dto.IssueStatusRequest;
+import cau.se.issuemanagespring.dto.*;
 import cau.se.issuemanagespring.service.AuthService;
 import cau.se.issuemanagespring.service.CommentService;
 import cau.se.issuemanagespring.service.IssueService;
@@ -28,95 +24,149 @@ public class IssueController {
     @Autowired
     private AuthService authService;
 
+    /**
+     * Issue를 생성합니다. 생성된 Issue를 반환합니다.
+     * @param issueRequest title, dueDate, content, assigneeNameArray, priority, token
+     * @return IssueResponse
+     */
     @PostMapping
-    public ResponseEntity<Issue> createIssue(@RequestBody IssueRequest issueRequest) {
+    public ResponseEntity<IssueResponse> createIssue(@RequestBody IssueRequest issueRequest) {
         // token 검증
         String authUser = authService.authenticate(issueRequest.getToken());
         if (authUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        Issue createdIssue = issueService.create(issueRequest, authUser);
+        IssueResponse createdIssue = issueService.create(issueRequest, authUser);
         if (createdIssue == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         return ResponseEntity.status(HttpStatus.CREATED).body(createdIssue);
     }
 
+    /**
+     * 모든 Issue를 반환합니다.
+     * @return IssueResponse
+     */
     @GetMapping
-    public ResponseEntity<List<Issue>> getAllIssues() {
+    public ResponseEntity<List<IssueResponse>> getAllIssues() {
         return ResponseEntity.ok().body(issueService.getAll());
     }
 
+    /**
+     * keyword로 제목, reporter, assignee, fixer, status, priority를 검색합니다. 검색한 결과를 반환합니다.
+     * @param keyword 검색 키워드
+     * @return IssueResponse의 List
+     */
+    @GetMapping("/search")
+    public ResponseEntity<List<IssueResponse>> searchIssues(@RequestParam String keyword) {
+        return ResponseEntity.ok().body(issueService.search(keyword));
+    }
+
+    /**
+     * issueId에 해당하는 Issue를 반환합니다.
+     * @param issueId Issue의 ID
+     * @return IssueResponse
+     */
     @GetMapping("/{issueId}")
-    public ResponseEntity<Issue> getIssueById(@PathVariable("issueId") Long issueId) {
-        Issue issue = issueService.getById(issueId);
+    public ResponseEntity<IssueResponse> getIssueById(@PathVariable("issueId") Long issueId) {
+        IssueResponse issue = issueService.getById(issueId);
         if (issue == null) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok().body(issue);
     }
 
+    /**
+     * Issue를 수정합니다. 수정된 Issue를 반환합니다.
+     * @param issueId Issue의 ID
+     * @param issueRequest title, dueDate, content, assigneeNameArray, priority, token(필수)
+     * @return IssueResponse
+     */
     @PatchMapping("/{issueId}")
-    public ResponseEntity<Issue> updateIssue(@PathVariable("issueId") Long issueId, @RequestBody IssueRequest issueRequest) {
+    public ResponseEntity<IssueResponse> updateIssue(@PathVariable("issueId") Long issueId, @RequestBody IssueRequest issueRequest) {
         // token 검증
         String authUser = authService.authenticate(issueRequest.getToken());
         if (authUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        Issue updatedIssue = issueService.update(issueId, issueRequest, authUser);
+        IssueResponse updatedIssue = issueService.update(issueId, issueRequest, authUser);
         if (updatedIssue == null) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok().body(updatedIssue);
     }
 
+    /**
+     * Issue의 상태를 수정합니다. 수정된 Issue를 반환합니다.
+     * @param issueId Issue의 ID
+     * @param issueStatusRequest statusName, token(필수)
+     * @return IssueResponse
+     */
     @PatchMapping("/{issueId}/status")
-    public ResponseEntity<Issue> updateIssueStatus(@PathVariable("issueId") Long issueId, @RequestBody IssueStatusRequest issueStatusRequest) {
+    public ResponseEntity<IssueResponse> updateIssueStatus(@PathVariable("issueId") Long issueId, @RequestBody IssueStatusRequest issueStatusRequest) {
         // token 검증
         String authUser = authService.authenticate(issueStatusRequest.getToken());
         if (authUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        Issue updatedIssue = issueService.updateStatus(issueId, issueStatusRequest, authUser);
+        IssueResponse updatedIssue = issueService.updateStatus(issueId, issueStatusRequest, authUser);
         if (updatedIssue == null) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok().body(updatedIssue);
     }
 
+    /**
+     * issueId에 해당하는 Issue의 Comment를 작성합니다. 생성된 Comment를 반환합니다.
+     * @param issueId Issue의 ID
+     * @param commentRequest content, token
+     * @return CommentResponse
+     */
     @PostMapping("/{issueId}/comment")
-    public ResponseEntity<Comment> createComment(@PathVariable("issueId") Long issueId, @RequestBody CommentRequest commentRequest) {
+    public ResponseEntity<CommentResponse> createComment(@PathVariable("issueId") Long issueId, @RequestBody CommentRequest commentRequest) {
         // token 검증
         String authUser = authService.authenticate(commentRequest.getToken());
         if (authUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        Comment createdComment = commentService.create(commentRequest, issueId, authUser);
+        CommentResponse createdComment = commentService.create(commentRequest, issueId, authUser);
         if (createdComment == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         return ResponseEntity.status(HttpStatus.CREATED).body(createdComment);
     }
 
+    /**
+     * issueId에 해당하는 Issue의 모든 Comment를 반환합니다.
+     * @param issueId Issue의 ID
+     * @return CommentResponse의 List
+     */
     @GetMapping("/{issueId}/comment")
-    public ResponseEntity<List<Comment>> getComments(@PathVariable("issueId") Long issueId) {
-        List<Comment> comments = commentService.getAllByIssueId(issueId);
+    public ResponseEntity<List<CommentResponse>> getComments(@PathVariable("issueId") Long issueId) {
+        List<CommentResponse> comments = commentService.getAllByIssueId(issueId);
         return ResponseEntity.ok().body(comments);
     }
 
+    /**
+     * issueId에 해당하는 Issue에서 commentId에 해당하는 Comment를 수정합니다. 수정된 Comment를 반환합니다.
+     * @param issueId Issue의 ID
+     * @param commentId Comment의 ID
+     * @param commentRequest content, token
+     * @return CommentResponse
+     */
     @PatchMapping("/{issueId}/comment/{commentId}")
-    public ResponseEntity<Comment> updateComment(@PathVariable("issueId") Long issueId, @PathVariable("commentId") Long commentId, @RequestBody CommentRequest commentRequest) {
+    public ResponseEntity<CommentResponse> updateComment(@PathVariable("issueId") Long issueId, @PathVariable("commentId") Long commentId, @RequestBody CommentRequest commentRequest) {
         // token 검증
         String authUser = authService.authenticate(commentRequest.getToken());
         if (authUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        Comment updatedComment = commentService.update(issueId, commentId, commentRequest, authUser);
+        CommentResponse updatedComment = commentService.update(issueId, commentId, commentRequest, authUser);
         if (updatedComment == null) {
             return ResponseEntity.notFound().build();
         }
