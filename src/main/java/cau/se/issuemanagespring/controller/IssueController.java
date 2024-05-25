@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/project/{projectId}/issue")
@@ -22,6 +23,7 @@ public class IssueController {
 
     /**
      * Issue를 생성합니다. 생성된 Issue를 반환합니다.
+     * @param projectId Project의 ID
      * @param issueRequest title, dueDate, content, assigneeNameArray, priority, token
      * @return IssueResponse
      */
@@ -42,6 +44,7 @@ public class IssueController {
 
     /**
      * 모든 Issue를 반환합니다.
+     * @param projectId Project의 ID
      * @return IssueResponse
      */
     @GetMapping
@@ -51,6 +54,7 @@ public class IssueController {
 
     /**
      * keyword로 제목, reporter, assignee, fixer, status, priority를 검색합니다. 검색한 결과를 반환합니다.
+     * @param projectId Project의 ID
      * @param keyword 검색 키워드
      * @return IssueResponse의 List
      */
@@ -60,7 +64,27 @@ public class IssueController {
     }
 
     /**
+     * Issue 통계를 반환합니다.
+     * @param projectId Project의 ID
+     * @return IssueStatsResponse
+     */
+    @GetMapping("/stats")
+    public ResponseEntity<IssueStatsResponse> getIssueStatistics(@PathVariable("projectId") Long projectId) {
+        long todayCount = issueService.getTodayIssueCount(projectId);
+        if (todayCount == -1) {
+            return ResponseEntity.notFound().build();
+        }
+        long monthlyCount = issueService.getMonthlyIssueCount(projectId);
+        Map<String, Long> statusCount = issueService.getIssueCountByStatus(projectId);
+        Map<String, Long> priorityCount = issueService.getIssueCountByPriority(projectId);
+
+        IssueStatsResponse dto = new IssueStatsResponse(todayCount, monthlyCount, statusCount, priorityCount);
+        return ResponseEntity.ok().body(dto);
+    }
+
+    /**
      * issueId에 해당하는 Issue를 반환합니다.
+     * @param projectId Project의 ID
      * @param issueId Issue의 ID
      * @return IssueResponse
      */
@@ -74,7 +98,23 @@ public class IssueController {
     }
 
     /**
+     * Issue의 내용을 분석해 알맞은 Assignee를 추천합니다. 추천하는 Assignee의 이름 배열이 반환됩니다.
+     * @param projectId Project의 ID
+     * @param issueId Issue의 ID
+     * @return String의 List
+     */
+    @GetMapping("/{issueId}/recommend")
+    public ResponseEntity<List<String>> getRecommendAssignee(@PathVariable("projectId") Long projectId, @PathVariable("issueId") Long issueId) {
+        List<String> recommendAssignee = issueService.recommendAssignee(projectId, issueId);
+        if (recommendAssignee == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok().body(recommendAssignee);
+    }
+
+    /**
      * Issue를 수정합니다. 수정된 Issue를 반환합니다.
+     * @param projectId Project의 ID
      * @param issueId Issue의 ID
      * @param issueRequest title, dueDate, content, assigneeNameArray, priority, token(필수)
      * @return IssueResponse
@@ -96,6 +136,7 @@ public class IssueController {
 
     /**
      * Issue의 상태를 수정합니다. 수정된 Issue를 반환합니다.
+     * @param projectId Project의 ID
      * @param issueId Issue의 ID
      * @param issueStatusRequest statusName, token(필수)
      * @return IssueResponse
