@@ -18,6 +18,7 @@ import cau.se.issuemanagespring.domain.Comment;
 import cau.se.issuemanagespring.domain.Status;
 import cau.se.issuemanagespring.domain.Issue;
 import cau.se.issuemanagespring.domain.User;
+import cau.se.issuemanagespring.dto.CommentResponse;
 
 
 import java.time.LocalDateTime;
@@ -91,13 +92,13 @@ public class TestCommentService {
     	
     	// userid가 자동부여되는데, 위에 등록한 id와 실제 id가 다르면 create 오류생김
     	// **************************************************
-    	// issueid도 마찬가지, 자동 할당되는 번호랑 id가 같아야 찾을수 있다!!!!!!!
+    	// issueid는 또 안그러네..
     	commentService.create(commentRequest1, 2L, "sam");
     	commentService.create(commentRequest2, 2L, "sam");
     	
     	
     	//when
-    	List<Comment> result = commentService.getAllByIssueId(2L);
+    	List<CommentResponse> result = commentService.getAllByIssueId(2L);
     	
     	
     	
@@ -110,8 +111,8 @@ public class TestCommentService {
     	assertThat(result.get(2).getContent()).isEqualTo("comment 2");
     	//assertThat(result.get(3).getCommentOwner()).isEqualTo(sam);
     	//이런식으로하면 오류, 메모리주소 비교 실패
-    	assertThat(result.get(3).getCommentOwner().getName()).isEqualTo("sam");
-    	assertThat(result.get(4).getIssue().getTitle()).isEqualTo("big issue");
+    	assertThat(result.get(3).getCommentOwner()).isEqualTo("sam");
+    	assertThat(result.get(4).getIssueId()).isEqualTo(2L);
         
 
 
