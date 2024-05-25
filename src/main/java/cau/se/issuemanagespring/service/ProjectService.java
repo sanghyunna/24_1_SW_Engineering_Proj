@@ -87,7 +87,7 @@ public class ProjectService {
         return users;
     }
 
-    private ProjectResponse getProjectResponse(Project project) {
+    public ProjectResponse getProjectResponse(Project project) {
         if (project == null) {
             return null;
         }
@@ -103,7 +103,7 @@ public class ProjectService {
                 .build();
     }
 
-    private List<ProjectResponse> getProjectResponseList(List<Project> projects) {
+    public List<ProjectResponse> getProjectResponseList(List<Project> projects) {
         return projects.stream().map(this::getProjectResponse).collect(Collectors.toList());
     }
 }

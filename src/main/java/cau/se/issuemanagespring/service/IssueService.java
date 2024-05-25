@@ -135,7 +135,7 @@ public class IssueService {
         return getIssueResponse(issueRepository.save(issue));
     }
 
-    private List<User> getUsersByUsernames(List<String> usernames) {
+    public List<User> getUsersByUsernames(List<String> usernames) {
         List<User> users = new ArrayList<>();
         if (usernames == null) {
             return new ArrayList<>();
@@ -149,7 +149,7 @@ public class IssueService {
         return users;
     }
 
-    private IssueResponse getIssueResponse(Issue issue) {
+    public IssueResponse getIssueResponse(Issue issue) {
         if (issue == null) {
             return null;
         }
@@ -169,7 +169,7 @@ public class IssueService {
                 .build();
     }
 
-    private List<IssueResponse> getIssueResponseList(List<Issue> issues) {
+    public List<IssueResponse> getIssueResponseList(List<Issue> issues) {
         return issues.stream().map(this::getIssueResponse).collect(Collectors.toList());
     }
 }
