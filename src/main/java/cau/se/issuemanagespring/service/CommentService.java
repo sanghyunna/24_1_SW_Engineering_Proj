@@ -62,7 +62,7 @@ public class CommentService {
         return getCommentResponse(commentRepository.save(comment));
     }
 
-    private CommentResponse getCommentResponse(Comment comment) {
+    public CommentResponse getCommentResponse(Comment comment) {
         if (comment == null) {
             return null;
         }
@@ -76,7 +76,7 @@ public class CommentService {
                 .build();
     }
 
-    private List<CommentResponse> getCommentResponseList(List<Comment> comments) {
+    public List<CommentResponse> getCommentResponseList(List<Comment> comments) {
         return comments.stream().map(this::getCommentResponse).collect(Collectors.toList());
     }
 }
