@@ -10,11 +10,11 @@ import cau.se.issuemanagespring.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -73,6 +73,82 @@ public class IssueService {
             return null;
         }
         return getIssueResponse(issue);
+    }
+
+    public long getTodayIssueCount(Long projectId) {
+        Project project = projectRepository.findById(projectId).orElse(null);
+        if (project == null) {
+            return -1;
+        }
+        LocalDate today = LocalDate.now();
+        LocalDateTime startOfDay = LocalDateTime.of(today, LocalTime.MIN);
+        LocalDateTime endOfDay = LocalDateTime.of(today, LocalTime.MAX);
+        return issueRepository.countTodayIssues(startOfDay, endOfDay, projectId);
+    }
+
+    public long getMonthlyIssueCount(Long projectId) {
+        LocalDateTime now = LocalDateTime.now();
+        return issueRepository.countMonthlyIssues(now.getMonthValue(), now.getYear(), projectId);
+    }
+
+    public Map<String, Long> getIssueCountByStatus(Long projectId) {
+        List<Object[]> result = issueRepository.countByStatus(projectId);
+        Map<String, Long> countMap = result.stream()
+                .collect(Collectors.toMap(
+                        arr -> arr[0].toString(),
+                        arr -> (Long) arr[1]
+                ));
+
+        EnumSet<Status> allStatuses = EnumSet.allOf(Status.class);
+        return allStatuses.stream()
+                .collect(Collectors.toMap(
+                        Status::toString,
+                        status -> countMap.getOrDefault(status.toString(), 0L)
+                ));
+    }
+
+    public Map<String, Long> getIssueCountByPriority(Long projectId) {
+        List<Object[]> result = issueRepository.countByPriority(projectId);
+        Map<String, Long> countMap = result.stream()
+                .collect(Collectors.toMap(
+                        arr -> arr[0].toString(),
+                        arr -> (Long) arr[1]
+                ));
+
+        EnumSet<Priority> allPriorities = EnumSet.allOf(Priority.class);
+        return allPriorities.stream()
+                .collect(Collectors.toMap(
+                        Priority::toString,
+                        priority -> countMap.getOrDefault(priority.toString(), 0L)
+                ));
+    }
+
+    public List<String> recommendAssignee(Long projectId, Long issueId) {
+        Issue issue = issueRepository.findById(issueId).orElse(null);
+        if (issue == null || !Objects.equals(issue.getProject().getId(), projectId)) {
+            return null;
+        }
+
+        List<Issue> projectIssues = issueRepository.findAllByProjectId(projectId);
+        Issue mostSimilarIssue = null;
+        double mostSimilarScore = 0.0;
+
+        for (Issue comparedIssue : projectIssues) {
+            if (!Objects.equals(comparedIssue.getId(), issue.getId()) && comparedIssue.getStatus() == Status.FIXED) {
+                double similarity = jaccardSimilarity(issue.getContent(), comparedIssue.getContent());
+                if (similarity > mostSimilarScore) {
+                    mostSimilarScore = similarity;
+                    mostSimilarIssue = comparedIssue;
+                }
+            }
+        }
+
+        if (mostSimilarIssue == null) {
+            return Collections.emptyList();
+        }
+        else {
+            return mostSimilarIssue.getAssignee().stream().map(User::getName).toList();
+        }
     }
 
     public IssueResponse update(Long projectId, Long issueId, IssueRequest issueRequest, String authUser) {
@@ -171,5 +247,18 @@ public class IssueService {
 
     public List<IssueResponse> getIssueResponseList(List<Issue> issues) {
         return issues.stream().map(this::getIssueResponse).collect(Collectors.toList());
+    }
+
+    public double jaccardSimilarity(String s1, String s2) {
+        Set<String> set1 = new HashSet<>(Arrays.asList(s1.split(" ")));
+        Set<String> set2 = new HashSet<>(Arrays.asList(s2.split(" ")));
+
+        Set<String> intersection = new HashSet<>(set1);
+        intersection.retainAll(set2);
+
+        Set<String> union = new HashSet<>(set1);
+        union.addAll(set2);
+
+        return (double) intersection.size() / union.size();
     }
 }
