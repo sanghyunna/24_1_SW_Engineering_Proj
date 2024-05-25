@@ -63,7 +63,7 @@ public class UserService {
         return getUserResponse(user);
     }
 
-    private UserResponse getUserResponse(User user) {
+    public UserResponse getUserResponse(User user) {
         if (user == null) {
             return null;
         }
@@ -73,7 +73,7 @@ public class UserService {
                 .build();
     }
 
-    private List<UserResponse> getUserResponseList(List<User> users) {
+    public List<UserResponse> getUserResponseList(List<User> users) {
         return users.stream().map(this::getUserResponse).collect(Collectors.toList());
     }
 }
