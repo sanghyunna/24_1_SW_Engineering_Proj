@@ -44,9 +44,9 @@ public class CommentService {
         return getCommentResponseList(commentRepository.findAllByIssueId(issueId));
     }
 
-    public CommentResponse update(Long issueId, Long commentId, CommentRequest commentRequest, String authUser) {
+    public CommentResponse update(Long commentId, CommentRequest commentRequest, String authUser) {
         Comment comment = commentRepository.findById(commentId).orElse(null);
-        if (comment == null || !Objects.equals(comment.getIssue().getId(), issueId)) {
+        if (comment == null) {
             return null;
         }
 
