@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/issue/{issueId}/comment")
 public class CommentController {
 
     @Autowired
@@ -27,7 +26,7 @@ public class CommentController {
      * @param commentRequest content, token
      * @return CommentResponse
      */
-    @PostMapping
+    @PostMapping("/issue/{issueId}/comment")
     public ResponseEntity<CommentResponse> createComment(@PathVariable("issueId") Long issueId, @RequestBody CommentRequest commentRequest) {
         // token 검증
         String authUser = authService.authenticate(commentRequest.getToken());
@@ -47,7 +46,7 @@ public class CommentController {
      * @param issueId Issue의 ID
      * @return CommentResponse의 List
      */
-    @GetMapping
+    @GetMapping("/issue/{issueId}/comment")
     public ResponseEntity<List<CommentResponse>> getComments(@PathVariable("issueId") Long issueId) {
         List<CommentResponse> comments = commentService.getAllByIssueId(issueId);
         return ResponseEntity.ok().body(comments);
@@ -55,20 +54,19 @@ public class CommentController {
 
     /**
      * issueId에 해당하는 Issue에서 commentId에 해당하는 Comment를 수정합니다. 수정된 Comment를 반환합니다.
-     * @param issueId Issue의 ID
      * @param commentId Comment의 ID
      * @param commentRequest content, token
      * @return CommentResponse
      */
-    @PatchMapping("/{commentId}")
-    public ResponseEntity<CommentResponse> updateComment(@PathVariable("issueId") Long issueId, @PathVariable("commentId") Long commentId, @RequestBody CommentRequest commentRequest) {
+    @PatchMapping("/comment/{commentId}")
+    public ResponseEntity<CommentResponse> updateComment(@PathVariable("commentId") Long commentId, @RequestBody CommentRequest commentRequest) {
         // token 검증
         String authUser = authService.authenticate(commentRequest.getToken());
         if (authUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        CommentResponse updatedComment = commentService.update(issueId, commentId, commentRequest, authUser);
+        CommentResponse updatedComment = commentService.update(commentId, commentRequest, authUser);
         if (updatedComment == null) {
             return ResponseEntity.notFound().build();
         }

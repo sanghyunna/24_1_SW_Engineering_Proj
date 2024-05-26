@@ -68,6 +68,7 @@ public class AuthService {
         }
 
         auth.setToken(null);
+        authRepository.save(auth);
         return true;
     }
 }

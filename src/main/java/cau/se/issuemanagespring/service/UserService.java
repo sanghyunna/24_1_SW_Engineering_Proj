@@ -41,7 +41,7 @@ public class UserService {
     }
 
     public List<UserResponse> getAll() {
-        return getUserResponseList(userRepository.findAll());
+        return getUserResponseList(userRepository.findAllByOrderById());
     }
 
     public UserResponse update(Long userId, UserRequest userRequest) {

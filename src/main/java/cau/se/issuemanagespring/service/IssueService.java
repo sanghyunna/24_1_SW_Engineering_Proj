@@ -67,9 +67,9 @@ public class IssueService {
         return getIssueResponseList(issues);
     }
 
-    public IssueResponse getById(Long projectId, Long id) {
+    public IssueResponse getById(Long id) {
         Issue issue = issueRepository.findById(id).orElse(null);
-        if (issue == null || !Objects.equals(issue.getProject().getId(), projectId)) {
+        if (issue == null) {
             return null;
         }
         return getIssueResponse(issue);
@@ -123,13 +123,13 @@ public class IssueService {
                 ));
     }
 
-    public List<String> recommendAssignee(Long projectId, Long issueId) {
+    public List<String> recommendAssignee(Long issueId) {
         Issue issue = issueRepository.findById(issueId).orElse(null);
-        if (issue == null || !Objects.equals(issue.getProject().getId(), projectId)) {
+        if (issue == null) {
             return null;
         }
 
-        List<Issue> projectIssues = issueRepository.findAllByProjectId(projectId);
+        List<Issue> projectIssues = issueRepository.findAllByProjectId(issue.getProject().getId());
         Issue mostSimilarIssue = null;
         double mostSimilarScore = 0.0;
 
@@ -151,9 +151,9 @@ public class IssueService {
         }
     }
 
-    public IssueResponse update(Long projectId, Long issueId, IssueRequest issueRequest, String authUser) {
+    public IssueResponse update(Long issueId, IssueRequest issueRequest, String authUser) {
         Issue issue = issueRepository.findById(issueId).orElse(null);
-        if (issue == null || !Objects.equals(issue.getProject().getId(), projectId)) {
+        if (issue == null) {
             return null;
         }
 
@@ -195,9 +195,9 @@ public class IssueService {
         return getIssueResponseList(issues);
     }
 
-    public IssueResponse updateStatus(Long projectId, Long issueId, IssueStatusRequest issueStatusRequest, String authUser) {
+    public IssueResponse updateStatus(Long issueId, IssueStatusRequest issueStatusRequest, String authUser) {
         Issue issue = issueRepository.findById(issueId).orElse(null);
-        if (issue == null || !Objects.equals(issue.getProject().getId(), projectId)) {
+        if (issue == null) {
             return null;
         }
 

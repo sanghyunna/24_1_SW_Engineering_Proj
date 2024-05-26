@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/project/{projectId}/issue")
 public class IssueController {
 
     @Autowired
@@ -27,7 +26,7 @@ public class IssueController {
      * @param issueRequest title, dueDate, content, assigneeNameArray, priority, token
      * @return IssueResponse
      */
-    @PostMapping
+    @PostMapping("/project/{projectId}/issue")
     public ResponseEntity<IssueResponse> createIssue(@PathVariable("projectId") Long projectId, @RequestBody IssueRequest issueRequest) {
         // token 검증
         String authUser = authService.authenticate(issueRequest.getToken());
@@ -47,7 +46,7 @@ public class IssueController {
      * @param projectId Project의 ID
      * @return IssueResponse
      */
-    @GetMapping
+    @GetMapping("/project/{projectId}/issue")
     public ResponseEntity<List<IssueResponse>> getAllIssues(@PathVariable("projectId") Long projectId) {
         return ResponseEntity.ok().body(issueService.getAll(projectId));
     }
@@ -58,7 +57,7 @@ public class IssueController {
      * @param keyword 검색 키워드
      * @return IssueResponse의 List
      */
-    @GetMapping("/search")
+    @GetMapping("/project/{projectId}/issue/search")
     public ResponseEntity<List<IssueResponse>> searchIssues(@PathVariable("projectId") Long projectId, @RequestParam String keyword) {
         return ResponseEntity.ok().body(issueService.search(projectId, keyword));
     }
@@ -68,7 +67,7 @@ public class IssueController {
      * @param projectId Project의 ID
      * @return IssueStatsResponse
      */
-    @GetMapping("/stats")
+    @GetMapping("/project/{projectId}/issue/stats")
     public ResponseEntity<IssueStatsResponse> getIssueStatistics(@PathVariable("projectId") Long projectId) {
         long todayCount = issueService.getTodayIssueCount(projectId);
         if (todayCount == -1) {
@@ -84,13 +83,12 @@ public class IssueController {
 
     /**
      * issueId에 해당하는 Issue를 반환합니다.
-     * @param projectId Project의 ID
      * @param issueId Issue의 ID
      * @return IssueResponse
      */
-    @GetMapping("/{issueId}")
-    public ResponseEntity<IssueResponse> getIssueById(@PathVariable("projectId") Long projectId, @PathVariable("issueId") Long issueId) {
-        IssueResponse issue = issueService.getById(projectId, issueId);
+    @GetMapping("/issue/{issueId}")
+    public ResponseEntity<IssueResponse> getIssueById(@PathVariable("issueId") Long issueId) {
+        IssueResponse issue = issueService.getById(issueId);
         if (issue == null) {
             return ResponseEntity.notFound().build();
         }
@@ -99,13 +97,12 @@ public class IssueController {
 
     /**
      * Issue의 내용을 분석해 알맞은 Assignee를 추천합니다. 추천하는 Assignee의 이름 배열이 반환됩니다.
-     * @param projectId Project의 ID
      * @param issueId Issue의 ID
      * @return String의 List
      */
-    @GetMapping("/{issueId}/recommend")
-    public ResponseEntity<List<String>> getRecommendAssignee(@PathVariable("projectId") Long projectId, @PathVariable("issueId") Long issueId) {
-        List<String> recommendAssignee = issueService.recommendAssignee(projectId, issueId);
+    @GetMapping("/issue/{issueId}/recommend")
+    public ResponseEntity<List<String>> getRecommendAssignee(@PathVariable("issueId") Long issueId) {
+        List<String> recommendAssignee = issueService.recommendAssignee(issueId);
         if (recommendAssignee == null) {
             return ResponseEntity.notFound().build();
         }
@@ -114,20 +111,19 @@ public class IssueController {
 
     /**
      * Issue를 수정합니다. 수정된 Issue를 반환합니다.
-     * @param projectId Project의 ID
      * @param issueId Issue의 ID
      * @param issueRequest title, dueDate, content, assigneeNameArray, priority, token(필수)
      * @return IssueResponse
      */
-    @PatchMapping("/{issueId}")
-    public ResponseEntity<IssueResponse> updateIssue(@PathVariable("projectId") Long projectId, @PathVariable("issueId") Long issueId, @RequestBody IssueRequest issueRequest) {
+    @PatchMapping("/issue/{issueId}")
+    public ResponseEntity<IssueResponse> updateIssue(@PathVariable("issueId") Long issueId, @RequestBody IssueRequest issueRequest) {
         // token 검증
         String authUser = authService.authenticate(issueRequest.getToken());
         if (authUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        IssueResponse updatedIssue = issueService.update(projectId, issueId, issueRequest, authUser);
+        IssueResponse updatedIssue = issueService.update(issueId, issueRequest, authUser);
         if (updatedIssue == null) {
             return ResponseEntity.notFound().build();
         }
@@ -136,20 +132,19 @@ public class IssueController {
 
     /**
      * Issue의 상태를 수정합니다. 수정된 Issue를 반환합니다.
-     * @param projectId Project의 ID
      * @param issueId Issue의 ID
      * @param issueStatusRequest statusName, token(필수)
      * @return IssueResponse
      */
-    @PatchMapping("/{issueId}/status")
-    public ResponseEntity<IssueResponse> updateIssueStatus(@PathVariable("projectId") Long projectId, @PathVariable("issueId") Long issueId, @RequestBody IssueStatusRequest issueStatusRequest) {
+    @PatchMapping("/issue/{issueId}/status")
+    public ResponseEntity<IssueResponse> updateIssueStatus(@PathVariable("issueId") Long issueId, @RequestBody IssueStatusRequest issueStatusRequest) {
         // token 검증
         String authUser = authService.authenticate(issueStatusRequest.getToken());
         if (authUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        IssueResponse updatedIssue = issueService.updateStatus(projectId, issueId, issueStatusRequest, authUser);
+        IssueResponse updatedIssue = issueService.updateStatus(issueId, issueStatusRequest, authUser);
         if (updatedIssue == null) {
             return ResponseEntity.notFound().build();
         }
