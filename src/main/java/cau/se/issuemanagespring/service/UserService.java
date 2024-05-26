@@ -34,8 +34,8 @@ public class UserService {
         Auth auth = new Auth();
         auth.setUser(user);
         auth.setPassword(userRequest.getPassword());
-        auth.setToken("");
-        authRepository.save(auth);
+        auth.setToken("");         // need to be fixed?
+        authRepository.save(auth); 
 
         return getUserResponse(user);
     }
