@@ -36,6 +36,7 @@ import java.util.List;
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class TestProjectService {
+	
 	@Autowired
 	private UserRepository userRepository;
 	
