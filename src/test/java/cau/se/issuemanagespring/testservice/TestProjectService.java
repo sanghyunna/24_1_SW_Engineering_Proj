@@ -68,13 +68,11 @@ public class TestProjectService {
         UserRequest user1 = new UserRequest();
         user1.setName("sam");
         user1.setPassword("1234");
-        user1.setToken("SAM_TOKEN");
         userService.create(user1);
         
         UserRequest user2 = new UserRequest();
         user2.setName("james");
         user2.setPassword("1234");
-        user2.setToken("JAMES_TOKEN");
         userService.create(user2);
                
         ProjectRequest projectRequest1 = new ProjectRequest();

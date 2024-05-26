@@ -65,7 +65,6 @@ public class TestUserService {
 		UserRequest userRequest = new UserRequest();
 		userRequest.setName("sam");
 		userRequest.setPassword("1234");
-		userRequest.setToken("SAM_TOKEN");
 		userService.create(userRequest);
 		
 		ProjectRequest projectRequest = new ProjectRequest();
@@ -85,7 +84,6 @@ public class TestUserService {
 		UserRequest userRequest = new UserRequest();
 		userRequest.setName("james");
 		userRequest.setPassword("1234");
-		userRequest.setToken("JAMES_TOKEN");
 		userService.create(userRequest);
 		
 
@@ -93,11 +91,10 @@ public class TestUserService {
 		List<UserResponse> createdUser = userService.getAll();
 
 		// then
-		// userid는 정렬후 부여, 1순위: 대문자, 2순위: 알파벳순
-		assertThat(createdUser.get(0).getName()).isEqualTo("james");
-		assertThat(createdUser.get(0).getId()).isEqualTo(7L);        // id부여방식?
-		assertThat(createdUser.get(1).getName()).isEqualTo("sam");
-		assertThat(createdUser.get(1).getId()).isEqualTo(6L);
+		assertThat(createdUser.get(1).getName()).isEqualTo("james");
+		assertThat(createdUser.get(1).getId()).isEqualTo(7L);  
+		assertThat(createdUser.get(0).getName()).isEqualTo("sam");
+		assertThat(createdUser.get(0).getId()).isEqualTo(6L);
 
 	}
 	
@@ -115,7 +112,6 @@ public class TestUserService {
 		UserRequest userRequest = new UserRequest();
 		userRequest.setName("new name");
 		userRequest.setPassword("4321");
-		userRequest.setToken("NEW_TOKEN");
 				
 		// when
 		UserResponse updatedUser = userService.update(10L, userRequest);

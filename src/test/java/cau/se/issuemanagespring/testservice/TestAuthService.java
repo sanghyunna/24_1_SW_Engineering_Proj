@@ -70,7 +70,6 @@ public class TestAuthService {
             UserRequest userRequest = new UserRequest();
             userRequest.setName("sam");
             userRequest.setPassword("1234");
-            userRequest.setToken("SAM_TOKEN");
             userService.create(userRequest);
 
             User sam = userRepository.findByName("sam").orElse(null);
@@ -85,7 +84,7 @@ public class TestAuthService {
         	// given
         	
         	// when
-        	String name = authService.authenticate("SAM_TOKEN");
+        	String name = authService.authenticate("");
         	
         	// then
         	assertThat(name).isEqualTo("sam");
@@ -93,9 +92,6 @@ public class TestAuthService {
 		}
         
 
-
-        //authrepo에 토큰이 저장도 되는건가?
-        //로그인의 기능이 무엇인가? 뭘 검증해야하는가?
         @Test
         @Transactional
         public void testLogin() {
@@ -103,12 +99,10 @@ public class TestAuthService {
         	UserRequest loginRequest1 = new UserRequest();
         	loginRequest1.setName("sam");
         	loginRequest1.setPassword("1234");
-        	loginRequest1.setToken("SAM_TOKEN");
         	
         	UserRequest loginRequest2 = new UserRequest();
         	loginRequest2.setName("sam");
-        	loginRequest2.setPassword("1234");
-        	loginRequest2.setToken("TOM_TOKEN");
+        	loginRequest2.setPassword("4321");
         	
         	
         	// when
@@ -117,7 +111,7 @@ public class TestAuthService {
         	
         	// then
         	assertThat(login1.getName()).isEqualTo("sam");
-        	assertThat(login2.getName()).isEqualTo("sam");
+        	assertThat(login2).isNull();
         }
 
 
