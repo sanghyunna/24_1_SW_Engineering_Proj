@@ -1,7 +1,7 @@
 "use client";
 
 import "./globals.css";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 interface AccountType {
 	name: string;
@@ -17,8 +17,27 @@ export default function RootLayout({
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
-	const [name, setName] = useState("");
-	const [token, setToken] = useState("");
+	const [name, setName] = useState(() => {
+		if (true) {
+			return localStorage.getItem("name") || "";
+		}
+		return "";
+	});
+
+	const [token, setToken] = useState(() => {
+		if (true) {
+			return localStorage.getItem("token") || "";
+		}
+		return "";
+	});
+
+	useEffect(() => {
+		localStorage.setItem("name", name);
+	}, [name]);
+
+	useEffect(() => {
+		localStorage.setItem("token", token);
+	}, [token]);
 
 	const setAccount = (newName: string, newToken: string) => {
 		setName(newName);
@@ -29,7 +48,7 @@ export default function RootLayout({
 		<html lang="en">
 			<body>
 				<AccountContext.Provider value={{ name, token, setAccount }}>
-					{children}
+					<div suppressHydrationWarning={true}>{children}</div>
 				</AccountContext.Provider>
 			</body>
 		</html>

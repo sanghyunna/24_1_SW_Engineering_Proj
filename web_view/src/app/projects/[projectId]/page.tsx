@@ -1,43 +1,93 @@
-import { IssueBox } from "@/components/issueBox";
-import { baseURL } from "@/lib/constants";
+"use client";
 
-export default async function ({ params }: { params: { projectId: string } }) {
-	//const project = await fetch(baseURL + '/project/' + params.projectId).then(res => res.json());
-	const project = {
-		title: "title1",
-		projectOwner: "Temple",
-		createDate: "2023-05-18T12:00:00",
-		updateDate: "2023-05-18T12:00:00",
-	};
+import { IssueBox } from "@/components/issueBox";
+import { CreateIssueModal } from "@/components/modal/createIssueModal";
+import { SearchBox } from "@/components/searchBox";
+import { StatsBox } from "@/components/statsBox";
+import { baseURL } from "@/lib/constants";
+import { Issue, IssueStats, Project } from "@/lib/types";
+import { useEffect, useState } from "react";
+
+export default function ({ params }: { params: { projectId: string } }) {
+	const { projectId } = params;
+	const [project, setProject] = useState<Project>({} as Project);
+	const [stats, setStats] = useState<IssueStats>({} as IssueStats);
+	const [issues, setIssues] = useState<Issue[]>([]);
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState<string | null>(null);
+
+	useEffect(() => {
+		const fetchData = async () => {
+			setLoading(true);
+			try {
+				const projectRes = await fetch(`${baseURL}/project/${projectId}`).then(
+					(res) => res.json()
+				);
+				setProject(projectRes);
+
+				const statsRes = await fetch(
+					`${baseURL}/project/${projectId}/issue/stats`
+				).then((res) => res.json());
+				setStats(statsRes);
+
+				const issuesRes = await fetch(
+					`${baseURL}/project/${projectId}/issue`
+				).then((res) => res.json());
+				setIssues(issuesRes);
+			} catch (err) {
+				setError("Failed to fetch data");
+			} finally {
+				setLoading(false);
+			}
+		};
+		fetchData();
+	}, []);
+
+	if (loading) return <div>Loading...</div>;
+	if (error) return <div>{error}</div>;
 
 	return (
 		<div>
-			<div className="px-6 py-5 border-b border-gray-200 dark:border-gray-800">
-				<h1 className="text-2xl font-bold">{project.title}</h1>
-			</div>
-			<div className="px-6 py-5 grid grid-cols-2 gap-4">
-				<div>
-					<p className="text-gray-500 dark:text-gray-400 text-sm">Created</p>
-					<p className="text-gray-900 font-medium">{project.createDate}</p>
+			<div>
+				<div className="mb-12">
+					<div className="text-5xl font-bold">{project.title}</div>
 				</div>
-				<div>
-					<p className="text-gray-500 dark:text-gray-400 text-sm">
-						Last Updated
-					</p>
-					<p className="text-gray-900 font-medium">{project.updateDate}</p>
-				</div>
-				<div>
-					<p className="text-gray-500 dark:text-gray-400 text-sm">Owner</p>
-					<div className="flex items-center gap-2">
-						<p className="text-gray-900 font-medium">{project.projectOwner}</p>
+				<div className="px-6 py-5 grid grid-cols-2 gap-4 rounded-lg border">
+					<div>
+						<p className="text-gray-500 dark:text-gray-400 text-sm">Created</p>
+						<p className="text-gray-900 font-medium">
+							{new Date(project.createDate).toLocaleString()}
+						</p>
+					</div>
+					<div>
+						<p className="text-gray-500 dark:text-gray-400 text-sm">
+							Last Updated
+						</p>
+						<p className="text-gray-900 font-medium">
+							{new Date(project.updateDate).toLocaleString()}
+						</p>
+					</div>
+					<div>
+						<p className="text-gray-500 dark:text-gray-400 text-sm">Owner</p>
+						<div className="flex items-center gap-2">
+							<p className="text-gray-900 font-medium">
+								{project.projectOwner}
+							</p>
+						</div>
 					</div>
 				</div>
 			</div>
 
-			<div className="flex flex-col place-items-center pt-12">
-				<IssueBox />
-				<IssueBox />
-				<IssueBox />
+			<StatsBox data={stats} />
+
+			<SearchBox projectId={project.id} setData={setIssues} />
+
+			<CreateIssueModal projectId={project.id} />
+
+			<div className="flex flex-col place-items-center pt-4 mb-96">
+				{issues.map((issue) => (
+					<IssueBox key={issue.id} data={issue} />
+				))}
 			</div>
 		</div>
 	);

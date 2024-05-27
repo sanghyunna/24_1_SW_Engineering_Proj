@@ -1,19 +1,19 @@
+import { Issue } from "@/lib/types";
 import Link from "next/link";
 
-export function IssueBox() {
+export function IssueBox({ data }: { data: Issue }) {
 	return (
 		<div
 			className="rounded-lg border shadow-sm w-[calc(100%-4rem)] my-4"
 			data-v0-t="card"
 		>
-			<Link href={"/projects/1/issues/1"}>
+			<Link href={"/issues/" + data.id}>
 				<div className="flex flex-col space-y-1.5 p-6">
 					<h3 className="whitespace-nowrap text-2xl font-semibold leading-none tracking-tight">
-						Issue #123: Server Outage
+						{data.title}
 					</h3>
-					<p className="text-sm text-muted-foreground">
-						The website is experiencing a server outage, causing users to be
-						unable to access the platform.
+					<p className="text-sm text-muted-foreground pt-2 overflow-hidden whitespace-nowrap text-ellipsis break-all">
+						{data.content}
 					</p>
 				</div>
 				<div className="p-6 grid gap-4">
@@ -22,13 +22,13 @@ export function IssueBox() {
 							<p className="text-sm font-medium text-gray-500 dark:text-gray-400">
 								Reporter
 							</p>
-							<p>John Doe</p>
+							<p>{data.reporter}</p>
 						</div>
 						<div className="space-y-1">
 							<p className="text-sm font-medium text-gray-500 dark:text-gray-400">
 								Status
 							</p>
-							<div>In Progress</div>
+							<div>{data.status}</div>
 						</div>
 					</div>
 					<div className="grid grid-cols-2 gap-4">
@@ -36,13 +36,13 @@ export function IssueBox() {
 							<p className="text-sm font-medium text-gray-500 dark:text-gray-400">
 								Priority
 							</p>
-							<div>High</div>
+							<div>{data.priority}</div>
 						</div>
 						<div className="space-y-1">
 							<p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-								Created
+								Reported
 							</p>
-							<p>2023-05-24</p>
+							<p>{new Date(data.createDate).toLocaleString()}</p>
 						</div>
 					</div>
 				</div>
