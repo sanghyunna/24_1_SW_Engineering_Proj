@@ -3,6 +3,7 @@
 import { CreateProjectModal } from "./modal/createProjectModal";
 import { CreateUserModal } from "./modal/createUserModal";
 import { LoginModal } from "./modal/loginModal";
+import { UpdateUserModal } from "./modal/updateUserModal";
 
 export function Navbar() {
 	return (
@@ -23,6 +24,7 @@ export function Navbar() {
 					<div className="flex justify-center md:block">
 						<CreateProjectModal />
 						<CreateUserModal />
+						<UpdateUserModal />
 						<LoginModal />
 					</div>
 				</div>

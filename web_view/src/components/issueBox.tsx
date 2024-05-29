@@ -26,6 +26,20 @@ export function IssueBox({ data }: { data: Issue }) {
 						</div>
 						<div className="space-y-1">
 							<p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+								Assignee
+							</p>
+							<p>{data.assignee.join(", ")}</p>
+						</div>
+					</div>
+					<div className="grid grid-cols-2 gap-4">
+						<div className="space-y-1">
+							<p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+								Fixer
+							</p>
+							<div>{data.fixer}</div>
+						</div>
+						<div className="space-y-1">
+							<p className="text-sm font-medium text-gray-500 dark:text-gray-400">
 								Status
 							</p>
 							<div>{data.status}</div>

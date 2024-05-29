@@ -44,7 +44,7 @@ export default function ({ params }: { params: { issueId: string } }) {
 			</div>
 			<div className="px-6 py-5 grid grid-cols-2 gap-4 rounded-lg border">
 				<div>
-					<p className="text-gray-500 dark:text-gray-400 text-sm">Created</p>
+					<p className="text-gray-500 dark:text-gray-400 text-sm">Reported</p>
 					<p className="text-gray-900 font-medium">
 						{new Date(issue.createDate).toLocaleString()}
 					</p>
@@ -65,6 +65,16 @@ export default function ({ params }: { params: { issueId: string } }) {
 					<p className="text-gray-500 dark:text-gray-400 text-sm">Assignee</p>
 					<p className="text-gray-900 font-medium">
 						{issue.assignee.join(", ")}
+					</p>
+				</div>
+				<div>
+					<p className="text-gray-500 dark:text-gray-400 text-sm">Fixer</p>
+					<p className="text-gray-900 font-medium">{issue.fixer}</p>
+				</div>
+				<div>
+					<p className="text-gray-500 dark:text-gray-400 text-sm">Due Date</p>
+					<p className="text-gray-900 font-medium">
+						{new Date(issue.dueDate).toLocaleString()}
 					</p>
 				</div>
 				<div>

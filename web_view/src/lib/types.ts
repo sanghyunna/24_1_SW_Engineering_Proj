@@ -1,3 +1,8 @@
+export interface User {
+	id: number;
+	name: string;
+}
+
 export interface Project {
 	id: number;
 	createDate: string;

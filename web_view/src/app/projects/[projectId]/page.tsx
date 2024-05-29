@@ -2,6 +2,7 @@
 
 import { IssueBox } from "@/components/issueBox";
 import { CreateIssueModal } from "@/components/modal/createIssueModal";
+import { UpdateProjectModal } from "@/components/modal/updateProjectModal";
 import { SearchBox } from "@/components/searchBox";
 import { StatsBox } from "@/components/statsBox";
 import { baseURL } from "@/lib/constants";
@@ -49,9 +50,13 @@ export default function ({ params }: { params: { projectId: string } }) {
 	return (
 		<div>
 			<div>
-				<div className="mb-12">
-					<div className="text-5xl font-bold">{project.title}</div>
+				<div className="pb-12">
+					<div className="flex justify-between">
+						<div className="text-5xl font-bold">{project.title}</div>
+						<UpdateProjectModal project={project} />
+					</div>
 				</div>
+
 				<div className="px-6 py-5 grid grid-cols-2 gap-4 rounded-lg border">
 					<div>
 						<p className="text-gray-500 dark:text-gray-400 text-sm">Created</p>
@@ -72,6 +77,30 @@ export default function ({ params }: { params: { projectId: string } }) {
 						<div className="flex items-center gap-2">
 							<p className="text-gray-900 font-medium">
 								{project.projectOwner}
+							</p>
+						</div>
+					</div>
+					<div>
+						<p className="text-gray-500 dark:text-gray-400 text-sm">PL</p>
+						<div className="flex items-center gap-2">
+							<p className="text-gray-900 font-medium">
+								{project.pl.join(", ")}
+							</p>
+						</div>
+					</div>
+					<div>
+						<p className="text-gray-500 dark:text-gray-400 text-sm">Dev</p>
+						<div className="flex items-center gap-2">
+							<p className="text-gray-900 font-medium">
+								{project.dev.join(", ")}
+							</p>
+						</div>
+					</div>
+					<div>
+						<p className="text-gray-500 dark:text-gray-400 text-sm">Tester</p>
+						<div className="flex items-center gap-2">
+							<p className="text-gray-900 font-medium">
+								{project.tester.join(", ")}
 							</p>
 						</div>
 					</div>

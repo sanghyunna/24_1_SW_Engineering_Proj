@@ -31,7 +31,6 @@ export function CreateCommentModal({ issueId }: { issueId: number }) {
 
 		const tokenData = { token: token };
 		const combinedData = { ...filteredData, ...tokenData };
-		console.log(combinedData);
 		try {
 			const response = await fetch(`${baseURL}/issue/${issueId}/comment`, {
 				method: "POST",

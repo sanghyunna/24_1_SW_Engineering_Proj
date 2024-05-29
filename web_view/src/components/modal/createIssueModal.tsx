@@ -51,7 +51,6 @@ export function CreateIssueModal({ projectId }: { projectId: number }) {
 
 		const tokenData = { token: token };
 		const combinedData = { ...filteredData, ...tokenData };
-		console.log(combinedData);
 		try {
 			const response = await fetch(`${baseURL}/project/${projectId}/issue`, {
 				method: "POST",

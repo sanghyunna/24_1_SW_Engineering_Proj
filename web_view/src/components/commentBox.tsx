@@ -1,4 +1,5 @@
 import { Comment } from "@/lib/types";
+import { UpdateCommentModal } from "./modal/updateCommentModal";
 
 export function CommentBox({ data }: { data: Comment }) {
 	return (
@@ -21,9 +22,12 @@ export function CommentBox({ data }: { data: Comment }) {
 					<p className="mt-2 text-sm leading-relaxed break-all">
 						{data.content}
 					</p>
-					<div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-						{new Date(data.updateDate).toLocaleString()}
-						<span>에 수정함</span>
+					<div className="flex justify-between">
+						<div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+							{new Date(data.updateDate).toLocaleString()}
+							<span>에 수정함</span>
+						</div>
+						<UpdateCommentModal comment={data} />
 					</div>
 				</div>
 			</div>

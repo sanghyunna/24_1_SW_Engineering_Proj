@@ -46,7 +46,7 @@ export function SearchBox({
 			<div className="flex items-center rounded-2xl bg-white shadow px-4 py-2 border-2 border-slate-300 h-14">
 				<input
 					className="w-full bg-transparent focus:outline-none"
-					placeholder="무엇이든 검색하세요. (ex: Assignee, issue, reporter)"
+					placeholder="무엇이든 검색하세요. (ex: Title, Assignee, Status ... )"
 					type="text"
 					value={keyword}
 					onChange={(e) => setKeyword(e.target.value)}
