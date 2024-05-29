@@ -44,8 +44,8 @@ public class UserService {
         return getUserResponseList(userRepository.findAllByOrderById());
     }
 
-    public UserResponse update(Long userId, UserRequest userRequest) {
-        User user = userRepository.findById(userId).orElse(null);
+    public UserResponse update(UserRequest userRequest, String authUser) {
+        User user = userRepository.findByName(authUser).orElse(null);
         if (user == null) {
             return null;
         }
@@ -55,7 +55,7 @@ public class UserService {
             userRepository.save(user);
         }
         if (userRequest.getPassword() != null) {
-            Auth auth = authRepository.findByUserId(userId).orElseThrow(() -> new NoSuchElementException("Auth not found"));
+            Auth auth = authRepository.findByUserName(authUser).orElseThrow(() -> new NoSuchElementException("Auth not found"));
             auth.setPassword(userRequest.getPassword());
             authRepository.save(auth);
         }

@@ -2,6 +2,7 @@ package cau.se.issuemanagespring.controller;
 
 import cau.se.issuemanagespring.dto.UserRequest;
 import cau.se.issuemanagespring.dto.UserResponse;
+import cau.se.issuemanagespring.service.AuthService;
 import cau.se.issuemanagespring.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private AuthService authService;
 
     /**
      * User를 생성합니다. 생성된 User를 반환합니다.
@@ -43,13 +47,18 @@ public class UserController {
 
     /**
      * userId에 해당하는 User를 수정합니다. 수정된 User를 반환합니다.
-     * @param userId User의 ID
      * @param userRequest name, password, token
      * @return UserResponse
      */
-    @PatchMapping("/{userId}")
-    public ResponseEntity<UserResponse> updateUser(@PathVariable Long userId, @RequestBody UserRequest userRequest) {
-        UserResponse updatedUser = userService.update(userId, userRequest);
+    @PatchMapping
+    public ResponseEntity<UserResponse> updateUser(@RequestBody UserRequest userRequest) {
+        // token 검증
+        String authUser = authService.authenticate(userRequest.getToken());
+        if (authUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        UserResponse updatedUser = userService.update(userRequest, authUser);
         if (updatedUser == null) {
             return ResponseEntity.notFound().build();
         }
