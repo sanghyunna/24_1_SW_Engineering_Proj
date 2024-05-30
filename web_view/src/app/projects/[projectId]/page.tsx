@@ -51,6 +51,7 @@ export default function ({ params }: { params: { projectId: string } }) {
 		<div>
 			<div>
 				<div className="pb-12">
+					<div className="text-base text-gray-400">Project</div>
 					<div className="flex justify-between">
 						<div className="text-5xl font-bold">{project.title}</div>
 						<UpdateProjectModal project={project} />

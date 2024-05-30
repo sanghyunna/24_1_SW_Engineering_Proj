@@ -31,7 +31,7 @@ public class AuthController {
     }
 
     /**
-     * tokend을 받고 해당 token의 효력을 없앱니다.
+     * token을 받고 해당 token의 효력을 없앱니다.
      * @param tokenRequest token
      * @return 없음
      */

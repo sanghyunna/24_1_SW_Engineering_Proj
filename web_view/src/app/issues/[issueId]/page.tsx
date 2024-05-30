@@ -2,6 +2,7 @@
 
 import { CommentBox } from "@/components/commentBox";
 import { CreateCommentModal } from "@/components/modal/createCommentModal";
+import { UpdateIssueModal } from "@/components/modal/updateIssueModal";
 import { baseURL } from "@/lib/constants";
 import { Comment, Issue } from "@/lib/types";
 import { useEffect, useState } from "react";
@@ -40,7 +41,11 @@ export default function ({ params }: { params: { issueId: string } }) {
 	return (
 		<div>
 			<div className="mb-12">
-				<div className="text-5xl font-bold">{issue.title}</div>
+				<div className="text-base text-gray-400">Issue</div>
+				<div className="flex justify-between">
+					<div className="text-5xl font-bold">{issue.title}</div>
+					<UpdateIssueModal issue={issue} />
+				</div>
 			</div>
 			<div className="px-6 py-5 grid grid-cols-2 gap-4 rounded-lg border">
 				<div>
