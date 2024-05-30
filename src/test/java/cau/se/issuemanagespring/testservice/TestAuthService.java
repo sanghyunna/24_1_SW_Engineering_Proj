@@ -60,6 +60,7 @@ public class TestAuthService {
         
         @BeforeEach
         public void setUp() {
+        	
             authRepository.deleteAll();
             commentRepository.deleteAll();
             issueRepository.deleteAll();
@@ -67,27 +68,30 @@ public class TestAuthService {
             userRepository.deleteAll();
             
             
-            UserRequest userRequest = new UserRequest();
-            userRequest.setName("sam");
-            userRequest.setPassword("1234");
-            userService.create(userRequest);
-
-            User sam = userRepository.findByName("sam").orElse(null);
-            assertThat(sam).isNotNull();
+            User nick_user = new User();
+            nick_user.setName("nick");
+            nick_user = userRepository.save(nick_user);
+            
+            Auth nick_auth = new Auth();
+            nick_auth.setUser(nick_user);
+            nick_auth.setPassword("1234");
+            nick_auth.setToken("TOKEN_NICK");
+            authRepository.save(nick_auth);
+            
 
         }
         
-        // userservice 수정필요
         @Test
         @Transactional
 		public void testAuthenticate() {
+        	
         	// given
         	
         	// when
-        	String name = authService.authenticate("");
+        	String name = authService.authenticate("TOKEN_NICK");
         	
         	// then
-        	assertThat(name).isEqualTo("sam");
+        	assertThat(name).isEqualTo("nick");
 
 		}
         
@@ -95,13 +99,14 @@ public class TestAuthService {
         @Test
         @Transactional
         public void testLogin() {
+        	
         	// given
         	UserRequest loginRequest1 = new UserRequest();
-        	loginRequest1.setName("sam");
+        	loginRequest1.setName("nick");
         	loginRequest1.setPassword("1234");
         	
         	UserRequest loginRequest2 = new UserRequest();
-        	loginRequest2.setName("sam");
+        	loginRequest2.setName("nick");
         	loginRequest2.setPassword("4321");
         	
         	
@@ -110,7 +115,7 @@ public class TestAuthService {
         	TokenResponse login2 = authService.login(loginRequest2);
         	
         	// then
-        	assertThat(login1.getName()).isEqualTo("sam");
+        	assertThat(login1.getName()).isEqualTo("nick");
         	assertThat(login2).isNull();
         }
 
@@ -120,7 +125,7 @@ public class TestAuthService {
 			// given
 
 			// when
-			boolean logout = authService.logout("sam");
+			boolean logout = authService.logout("nick");
 
 			// then
 			assertThat(logout).isTrue();

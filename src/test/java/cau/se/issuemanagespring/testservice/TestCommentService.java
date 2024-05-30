@@ -22,19 +22,18 @@ import cau.se.issuemanagespring.service.UserService;
 import cau.se.issuemanagespring.service.ProjectService;
 import cau.se.issuemanagespring.dto.CommentRequest;
 import cau.se.issuemanagespring.dto.CommentResponse;
-import cau.se.issuemanagespring.dto.IssueRequest;
-import cau.se.issuemanagespring.dto.IssueResponse;
-import cau.se.issuemanagespring.dto.UserRequest;
-import cau.se.issuemanagespring.dto.UserResponse;
-import cau.se.issuemanagespring.dto.ProjectRequest;
-import cau.se.issuemanagespring.dto.ProjectResponse;
 import cau.se.issuemanagespring.domain.Comment;
-
-
+import cau.se.issuemanagespring.domain.Issue;
+import cau.se.issuemanagespring.domain.Priority;
+import cau.se.issuemanagespring.domain.User;
+import cau.se.issuemanagespring.domain.Auth;
+import cau.se.issuemanagespring.domain.Project;
+import cau.se.issuemanagespring.domain.Status;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 
 @SpringBootTest
@@ -76,38 +75,41 @@ public class TestCommentService {
         projectRepository.deleteAll();
         userRepository.deleteAll();
         
+        User brown_user = new User();
+        brown_user.setName("brown");
+        userRepository.save(brown_user);
         
-        UserRequest sam = new UserRequest();
-        sam.setName("sam");
-        sam.setPassword("1234");
-        userService.create(sam);
+        Auth brown_auth = new Auth();
+        brown_auth.setUser(brown_user);
+        brown_auth.setPassword("1234");
+        brown_auth.setToken(null);
+        authRepository.save(brown_auth);
         
-        ProjectRequest projectRequest = new ProjectRequest();
-        projectRequest.setTitle("project");
-        projectRequest.setPLNameArray(Arrays.asList("sam"));
-        projectRequest.setDevNameArray(Arrays.asList("james"));
-        projectRequest.setTesterNameArray(Arrays.asList("sam", "james"));
-        projectRequest.setToken("PJ1_TOKEN");  // 이것도 어디에 쓰이는것인가?
-        projectService.create(projectRequest, "sam");
+        Project project_a = new Project();
+        project_a.setTitle("project A");
+        project_a.setProjectOwner(brown_user);
+        project_a.setPLs(Arrays.asList(brown_user));
+        project_a.setDevs(Arrays.asList(brown_user));
+        project_a.setTesters(Arrays.asList(brown_user));
+        project_a = projectRepository.save(project_a);
         
-        IssueRequest issue = new IssueRequest();
-        issue.setTitle("title");
-        issue.setDueDate("2024-06-01T12:00:00");
-        issue.setContent("content");
-        issue.setAssigneeNameArray(Arrays.asList("sam"));
-        issue.setPriority("MAJOR");
-        issue.setToken("ISSUE_TOKEN");      // 이슈의 토큰은 어디에 사용하는가...?
-        issueService.create(3L, issue, "sam");
+        Issue issue1 = new Issue();
+        issue1.setTitle("issue1");
+        issue1.setDueDate(LocalDateTime.parse("2024-06-01T12:00:00"));
+        issue1.setContent("content1");
+        issue1.setProject(project_a);
+        issue1.setReporter(brown_user);
+        issue1.setAssignee(Arrays.asList(brown_user));
+        issue1.setFixer(brown_user);
+        issue1.setStatus(Status.ASSIGNED);
+        issue1.setPriority(Priority.MAJOR);
+        issue1 = issueRepository.save(issue1);
         
-        CommentRequest comment1 = new CommentRequest();
+        Comment comment1 = new Comment();
         comment1.setContent("comment1");
-        comment1.setToken("COMMENT1_TOKEN"); // 이토큰은 무엇인가..
-        commentService.create(comment1, 5L, "sam");
-        
-        CommentRequest comment2 = new CommentRequest();
-        comment2.setContent("comment2");
-        comment2.setToken("COMMENT2_TOKEN");
-        commentService.create(comment2, 5L, "sam");
+        comment1.setIssue(issue1);
+        comment1.setCommentOwner(brown_user);
+        commentRepository.save(comment1);
                 
         
 	}
@@ -116,25 +118,28 @@ public class TestCommentService {
 	public void testCreateAndGetAllByIssueId() throws Exception {
     	
     	// given
-    	CommentRequest comment1 = new CommentRequest();
-        comment1.setContent("comment3");
-        comment1.setToken("COMMENT1_TOKEN"); // 이토큰은 무엇인가..
+    	CommentRequest comment2 = new CommentRequest();
+        comment2.setContent("comment2");
+        comment2.setToken(null);
+        
+        List<Project> projectList = projectRepository.findAll();
+    	long projectId = projectList.get(0).getId();
+    	List<Issue> issueList = issueRepository.findAllByProjectId(projectId);
+    	long issueId = issueList.get(0).getId();
+        
     	
         // when
-        commentService.create(comment1, 5L, "sam");
-        List<CommentResponse> commentList1 = commentService.getAllByIssueId(5L);
+        commentService.create(comment2, issueId, "brown");
+        List<CommentResponse> commentList = commentService.getAllByIssueId(issueId);
         
         
         
         // then
-        assertThat(commentList1.size()).isEqualTo(3);
-        assertThat(commentList1.get(0).getContent()).isEqualTo("comment1");
-        assertThat(commentList1.get(0).getCommentOwner()).isEqualTo("sam");
-        assertThat(commentList1.get(1).getContent()).isEqualTo("comment2");
-        assertThat(commentList1.get(1).getCommentOwner()).isEqualTo("sam");
-        assertThat(commentList1.get(2).getContent()).isEqualTo("comment3");
-        assertThat(commentList1.get(2).getCommentOwner()).isEqualTo("sam");
-        
+        assertThat(commentList.size()).isEqualTo(2);
+        assertThat(commentList.get(0).getCommentOwner()).isEqualTo("brown");
+        assertThat(commentList.get(0).getContent()).isEqualTo("comment1");
+        assertThat(commentList.get(1).getCommentOwner()).isEqualTo("brown");
+        assertThat(commentList.get(1).getContent()).isEqualTo("comment2");
 
 	}
     
@@ -145,15 +150,21 @@ public class TestCommentService {
 		// given
 		CommentRequest update_comment = new CommentRequest();
 		update_comment.setContent("update_content1");
-		update_comment.setToken("UPDATE_TOKEN"); 
+		
+		List<Project> projectList = projectRepository.findAll();
+    	long projectId = projectList.get(0).getId();
+    	List<Issue> issueList = issueRepository.findAllByProjectId(projectId);
+    	long issueId = issueList.get(0).getId();
+    	List<Comment> commentList = commentRepository.findAllByIssueId(issueId);
+    	long commentId = commentList.get(0).getId();
 
 		// when
-		CommentResponse commentResponse = commentService.update(4L, update_comment, "sam");
+		CommentResponse commentResponse = commentService.update(commentId, update_comment, "brown");
 
 		// then
 		assertThat(commentResponse.getContent()).isEqualTo("update_content1");
-		assertThat(commentResponse.getCommentOwner()).isEqualTo("sam");
-		assertThat(commentResponse.getIssueId()).isEqualTo(5L);
+		assertThat(commentResponse.getCommentOwner()).isEqualTo("brown");
+		assertThat(commentResponse.getIssueId()).isEqualTo(issueId);
 		
 	}
     
@@ -163,15 +174,38 @@ public class TestCommentService {
 	public void testGetCommentResponseList() throws Exception {
     	
     	// given
+    	commentRepository.deleteAll();
+    	
+    	List<Project> projectList = projectRepository.findAll();
+    	long projectId = projectList.get(0).getId();
+    	List<Issue> issueList = issueRepository.findAllByProjectId(projectId);
+    	long issueId = issueList.get(0).getId();
+    	
+    	Optional<Issue> op_issue1 = issueRepository.findById(issueId);
+    	Issue issue1 = op_issue1.get();
+    	User brown_user = issue1.getReporter();
+    	
+    	Comment comment1 = new Comment();
+        comment1.setContent("comment1");
+        comment1.setIssue(issue1);
+        comment1.setCommentOwner(brown_user);
+        commentRepository.save(comment1);
+    	
+    	Comment comment2 = new Comment();
+        comment2.setContent("comment2");
+        comment2.setIssue(issue1);
+        comment2.setCommentOwner(brown_user);
+        commentRepository.save(comment2);
+
     	
     	// when
-    	List<Comment> comments = commentRepository.findAllByIssueId(5L);
-    	List<CommentResponse> commentList2 = commentService.getCommentResponseList(comments);
+    	List<Comment> comments = commentRepository.findAllByIssueId(issueId);
+    	List<CommentResponse> commentList = commentService.getCommentResponseList(comments);
     	
     	// then
-    	assertThat(commentList2.size()).isEqualTo(3);  // 앞에 테스트에서 하나 추가되서 3개
-        assertThat(commentList2.get(0).getCommentOwner()).isEqualTo("sam");
-        assertThat(commentList2.get(1).getContent()).isEqualTo("comment2");
+    	assertThat(commentList.size()).isEqualTo(2);
+        assertThat(commentList.get(0).getCommentOwner()).isEqualTo("brown");
+        assertThat(commentList.get(1).getContent()).isEqualTo("comment2");
 
 	}
     

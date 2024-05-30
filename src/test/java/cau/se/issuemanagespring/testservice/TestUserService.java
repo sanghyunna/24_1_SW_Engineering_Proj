@@ -13,6 +13,7 @@ import cau.se.issuemanagespring.repository.UserRepository;
 import cau.se.issuemanagespring.dto.UserRequest;
 import cau.se.issuemanagespring.service.UserService;
 import cau.se.issuemanagespring.domain.User;
+import cau.se.issuemanagespring.domain.Auth;
 import cau.se.issuemanagespring.dto.UserResponse;
 import cau.se.issuemanagespring.domain.Project;
 import cau.se.issuemanagespring.dto.ProjectRequest;
@@ -51,27 +52,35 @@ public class TestUserService {
 	private CommentRepository commentRepository;
 	
 	@Autowired
-	private AuthRepository AuthRepository;
+	private AuthRepository authRepository;
 	
 	@BeforeEach
 	public void setUp() {
-		AuthRepository.deleteAll();
+	
+		authRepository.deleteAll();
 		commentRepository.deleteAll();
 		issueRepository.deleteAll(); // 연관된 issue들을 먼저 삭제해야함
 		projectRepository.deleteAll();
 		userRepository.deleteAll();
 		
-		UserRequest userRequest = new UserRequest();
-		userRequest.setName("sam");
-		userRequest.setPassword("1234");
-		userService.create(userRequest);
+		User sam_user = new User();
+		sam_user.setName("sam");
+		sam_user = userRepository.save(sam_user);
 		
-		ProjectRequest projectRequest = new ProjectRequest();
-		projectRequest.setTitle("project1");
-		projectRequest.setPLNameArray(Arrays.asList("sam"));
-		projectRequest.setDevNameArray(Arrays.asList("sam"));
-		projectRequest.setTesterNameArray(Arrays.asList("sam"));
-		projectService.create(projectRequest, "sam");
+		Auth sam_auth = new Auth();
+		sam_auth.setUser(sam_user);
+		sam_auth.setPassword("1234");
+		sam_auth.setToken(null);
+		authRepository.save(sam_auth);
+		
+		Project project_a = new Project();
+        project_a.setTitle("project A");
+        project_a.setProjectOwner(sam_user);
+        project_a.setPLs(Arrays.asList(sam_user));
+        project_a.setDevs(Arrays.asList(sam_user));
+        project_a.setTesters(Arrays.asList(sam_user));
+        project_a = projectRepository.save(project_a);
+		
 	}
 	
 	
@@ -79,21 +88,24 @@ public class TestUserService {
 
 	@Test
 	public void testCreateAndGetAll() throws Exception {
-		// given
-		UserRequest userRequest = new UserRequest();
-		userRequest.setName("james");
-		userRequest.setPassword("1234");
-		userService.create(userRequest);
 		
-
+		// given
+		User james_user = new User();
+		james_user.setName("james");
+		james_user = userRepository.save(james_user);
+		
+		Auth james_auth = new Auth();
+		james_auth.setUser(james_user);
+		james_auth.setPassword("1234");
+		james_auth.setToken(null);
+		authRepository.save(james_auth);
+		
 		// when
-		List<UserResponse> createdUser = userService.getAll();
+		List<UserResponse> Users = userService.getAll();
 
 		// then
-		assertThat(createdUser.get(1).getName()).isEqualTo("james");
-		assertThat(createdUser.get(1).getId()).isEqualTo(7L);  
-		assertThat(createdUser.get(0).getName()).isEqualTo("sam");
-		assertThat(createdUser.get(0).getId()).isEqualTo(6L);
+		assertThat(Users.get(0).getName()).isEqualTo("sam");
+		assertThat(Users.get(1).getName()).isEqualTo("james");
 
 	}
 	
@@ -103,21 +115,27 @@ public class TestUserService {
 	public void testUpdate() throws Exception {
 
 		// given
-		User user = new User();
-		user.setName("tom");
-		user.setId(10L);
-		userRepository.save(user);
+		User alex_user = new User();
+		alex_user.setName("alex");
+		alex_user = userRepository.save(alex_user);
+		
+		Auth alex_auth = new Auth();
+		alex_auth.setUser(alex_user);
+		alex_auth.setPassword("1234");
+		alex_auth.setToken(null);
+		authRepository.save(alex_auth);
 		
 		UserRequest userRequest = new UserRequest();
 		userRequest.setName("new name");
 		userRequest.setPassword("4321");
+		userRequest.setToken(null);
 				
 		// when
-		UserResponse updatedUser = userService.update(10L, userRequest);
+		UserResponse updatedUser = userService.update(userRequest, "alex");
 
 		// then
 		assertThat(updatedUser.getName()).isEqualTo("new name");
-		assertThat(updatedUser.getId()).isEqualTo(10L);
+		assertThat(updatedUser.getId()).isEqualTo(alex_user.getId());
 		
 	}
 	
@@ -127,40 +145,59 @@ public class TestUserService {
 	public void testGetUserResponse() throws Exception {
         
 		// given
-		User user = new User();
-		user.setName("tom");
-		user.setId(10L);
+		User jack_user = new User();
+		jack_user.setName("jack");
+		jack_user = userRepository.save(jack_user);
 		
+		Auth jack_auth = new Auth();
+		jack_auth.setUser(jack_user);
+		jack_auth.setPassword("1234");
+		jack_auth.setToken(null);
+		authRepository.save(jack_auth);
 
 		// when
-		UserResponse userResponse = userService.getUserResponse(user);
+		UserResponse userResponse = userService.getUserResponse(jack_user);
 
 		// then
-	    assertThat(userResponse.getName()).isEqualTo("tom");
-	    assertThat(userResponse.getId()).isEqualTo(10L);
+	    assertThat(userResponse.getName()).isEqualTo("jack");
+	    assertThat(userResponse.getId()).isEqualTo(jack_user.getId());
 	}
 	
 	
 	@Test
 	public void testGetUserResponseList() throws Exception {
 		// given
-		User user1 = new User();
-		user1.setName("tom");
-		user1.setId(10L);
+		User jerry_user = new User();
+		jerry_user.setName("jerry");
+		jerry_user = userRepository.save(jerry_user);
 		
-		User user2 = new User();
-		user2.setName("jerry");
-		user2.setId(20L);
+		Auth jerry_auth = new Auth();
+		jerry_auth.setUser(jerry_user);
+		jerry_auth.setPassword("1234");
+		jerry_auth.setToken(null);
+		authRepository.save(jerry_auth);
+		
+		User ben_user = new User();
+		ben_user.setName("ben");
+		ben_user = userRepository.save(ben_user);
+		
+		Auth ben_auth = new Auth();
+		ben_auth.setUser(ben_user);
+		ben_auth.setPassword("1234");
+		ben_auth.setToken(null);
+		authRepository.save(ben_auth);
 
 
 		// when
-		List<UserResponse> userResponses = userService.getUserResponseList(Arrays.asList(user1, user2));
+		List<UserResponse> userResponses = userService.getUserResponseList(Arrays.asList(jerry_user, ben_user));
 
 		// then
-		assertThat(userResponses.get(0).getName()).isEqualTo("tom");
-		assertThat(userResponses.get(0).getId()).isEqualTo(10L);
-		assertThat(userResponses.get(1).getName()).isEqualTo("jerry");
-		assertThat(userResponses.get(1).getId()).isEqualTo(20L);
+		assertThat(userResponses.get(0).getName()).isEqualTo("jerry");
+		assertThat(userResponses.get(0).getId()).isEqualTo(jerry_user.getId());
+		assertThat(userResponses.get(1).getName()).isEqualTo("ben");
+		assertThat(userResponses.get(1).getId()).isEqualTo(ben_user.getId());
+		
+		
 	}
 
 }
