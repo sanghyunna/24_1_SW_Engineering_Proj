@@ -32,6 +32,7 @@ export function LoginModal() {
 			const data = await response.json();
 			console.log(data);
 			setAccount(data.name, data.token);
+			alert(`환영합니다. ${data.name}님.`);
 		} catch (error) {
 			console.error(error);
 			alert("이름 또는 비밀번호가 다릅니다.");

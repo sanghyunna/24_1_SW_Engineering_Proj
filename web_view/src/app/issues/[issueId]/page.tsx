@@ -3,6 +3,7 @@
 import { CommentBox } from "@/components/commentBox";
 import { CreateCommentModal } from "@/components/modal/createCommentModal";
 import { UpdateIssueModal } from "@/components/modal/updateIssueModal";
+import { UpdateIssueStatusModal } from "@/components/modal/updateIssueStatusModal";
 import { baseURL } from "@/lib/constants";
 import { Comment, Issue } from "@/lib/types";
 import { useEffect, useState } from "react";
@@ -82,10 +83,14 @@ export default function ({ params }: { params: { issueId: string } }) {
 						{new Date(issue.dueDate).toLocaleString()}
 					</p>
 				</div>
-				<div>
-					<p className="text-gray-500 dark:text-gray-400 text-sm">Status</p>
-					<p className="text-gray-900 font-medium">{issue.status}</p>
+				<div className="flex justify-between place-items-center">
+					<div>
+						<p className="text-gray-500 dark:text-gray-400 text-sm">Status</p>
+						<p className="text-gray-900 font-medium">{issue.status}</p>
+					</div>
+					<UpdateIssueStatusModal issue={issue} />
 				</div>
+
 				<div>
 					<p className="text-gray-500 dark:text-gray-400 text-sm">Priority</p>
 					<p className="text-gray-900 font-medium">{issue.priority}</p>
