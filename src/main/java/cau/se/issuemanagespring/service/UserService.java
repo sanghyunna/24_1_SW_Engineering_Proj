@@ -52,13 +52,14 @@ public class UserService {
 
         if (userRequest.getName() != null) {
             user.setName(userRequest.getName());
-            userRepository.save(user);
+
         }
         if (userRequest.getPassword() != null) {
             Auth auth = authRepository.findByUserName(authUser).orElseThrow(() -> new NoSuchElementException("Auth not found"));
             auth.setPassword(userRequest.getPassword());
             authRepository.save(auth);
         }
+        userRepository.save(user);
 
         return getUserResponse(user);
     }

@@ -44,6 +44,7 @@ export function UpdateUserModal() {
 			console.log(data);
 			setAccount(bodyData.name, token);
 			alert("계정 수정 완료");
+			location.reload();
 		} catch (error) {
 			console.error(error);
 			alert("오류가 발생했습니다.");

@@ -38,7 +38,8 @@ INSERT INTO project_devs (project_id, devs_id) VALUES (2, 4), (2, 5);
 
 -- Issues'
 INSERT INTO issue (title, create_date, update_date, due_date, content, project_id, reporter_id, status, priority) VALUES ('Slow loading times for product pages', '2024-05-18T12:00:00', '2024-05-18T12:00:00', '2024-05-25T12:00:00', 'Users are reporting very slow load times for our product detail pages, especially on mobile devices. We need to optimize the code and assets to improve performance.', 1, 1, 'FIXED', 'MAJOR');
-INSERT INTO issue (title, create_date, update_date, due_date, content, project_id, reporter_id, status, priority) VALUES ('Implement shopping cart functionality', '2024-05-25T13:00:00', '2024-05-25T13:00:00', '2024-06-01T13:00:00', 'Currently, users have to go through the checkout process for each item they want to purchase. We need to add a shopping cart so customers can add multiple items before checking out.', 1, 2, 'ASSIGNED', 'CRITICAL');
+INSERT INTO issue (title, create_date, update_date, due_date, content, project_id, reporter_id, status, priority) VALUES ('Implement shopping cart functionality', '2024-05-25T13:00:00', '2024-05-25T13:00:00', '2024-06-01T13:00:00', 'Currently, users have to go through the checkout process for each item they want to purchase. We need to add a shopping cart so customers can add multiple items before checking out.', 1, 2, 'FIXED', 'CRITICAL');
+INSERT INTO issue (title, create_date, update_date, due_date, content, project_id, reporter_id, status, priority) VALUES ('Login page is very slow', '2024-05-30T13:00:00', '2024-05-30T13:00:00', '2024-06-05T13:00:00', 'Users are reporting very slow loading experiences in login page. I think we need to optimize the code to improve performance as soon as possible.', 1, 1, 'NEW', 'CRITICAL');
 INSERT INTO issue (title, create_date, update_date, due_date, content, project_id, reporter_id, status, priority) VALUES ('Improve search functionality', '2023-05-18T14:00:00', '2023-05-18T14:00:00', '2023-06-01T14:00:00', 'Users have complained that the current site search is not returning relevant results. We need to re-evaluate the search algorithms and relevancy scoring.', 2, 2, 'NEW', 'CRITICAL');
 
 -- Add assignees to issues
@@ -47,6 +48,7 @@ INSERT INTO issue_assignee (issue_id, assignee_id) VALUES (2, 4), (2, 5);
 
 -- Add fixer to issues
 UPDATE issue SET fixer_id = 4 WHERE id = 1;
+UPDATE issue SET fixer_id = 5 WHERE id = 2;
 
 -- Comments
 INSERT INTO comment (create_date, update_date, content, issue_id, comment_owner_id) VALUES ('2024-05-18T12:00:00', '2024-05-18T12:00:00', 'Let''s try implementing code splitting and lazy loading non-critical assets to reduce initial load times.', 1, 3);
