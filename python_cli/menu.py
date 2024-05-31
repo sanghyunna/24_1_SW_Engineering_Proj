@@ -51,11 +51,11 @@ def projects_menu():
             "token": gv.TOKEN
         }
         if len(pl) > 0:
-            req["PLNameArray "] = pl
+            req["PLNameArray"] = pl
         if len(dev) > 0:
-            req["DevNameArray "] = dev
+            req["DevNameArray"] = dev
         if len(tester) > 0:
-            req["TesterNameArray "] = tester
+            req["TesterNameArray"] = tester
 
         code, res = send_post_request("/project", req)
 
@@ -98,14 +98,7 @@ def project_menu():
             return
         gv.PROJECT_CACHE = project
 
-        print(f"Title: {project['title']}")
-        print(f"Project Owner: {project['projectOwner']}")
-        print("PLs:")
-        print_array(project['pl'])
-        print("Developers:")
-        print_array(project['dev'])
-        print("Testers:")
-        print_array(project['tester'])
+        print_project(project)
 
         print()
         input("Press Enter to continue...")
@@ -178,11 +171,23 @@ def login_menu():
 
     print("[1] Login")
     print("[2] Register")
+    print("[3] Edit User")
     user_input = recieve_input()
     print()
 
     if user_input == 2: # [2] Register
         register_menu()
+        return
+    
+    # if user_input == 3: # [3] Edit User
+    #     print("Name: ")
+    #     name = input()
+    #     print("Password: ")
+    #     password = input()
+
+    if user_input != 1:
+        gv.MSG = "Invalid input"
+        login_menu()
         return
 
     print("Username: ")
@@ -282,6 +287,8 @@ def issues_menu():
         else:
             gv.MSG = f"ERROR CODE : {code} Failed to create issue"
 
+        issues_menu()
+
     elif user_input == 3: # [3] Search for Issue
         search_menu()
     
@@ -330,8 +337,8 @@ def issue_menu():
     user_input = recieve_input()
 
     if user_input == 0: # [0] Back
-        clear_screen()
-        project_menu()
+        clear_screen()  
+        issues_menu()
 
     elif user_input == 1: # [1] Edit Issue
         issue_id = gv.ISSUE_CACHE["id"]
@@ -363,6 +370,8 @@ def issue_menu():
             gv.MSG = "ERROR CODE : 404 Not Found"
         else:
             gv.MSG = f"ERROR CODE : {code} Failed to edit issue"
+        
+        issues_menu()
 
     elif user_input == 2: # [2] Update Issue Status
         issue_id = gv.ISSUE_CACHE["id"]
@@ -523,6 +532,8 @@ def comments_menu():
         else:
             gv.MSG = f"ERROR CODE : {code} Failed to create comment"
 
+        comments_menu()
+
     elif user_input == 2: # Edit Comment
         print("Select Comment: ")
         comment_index = recieve_input()
@@ -544,6 +555,8 @@ def comments_menu():
             gv.MSG = "ERROR CODE : 404 Not Found"
         else:
             gv.MSG = f"ERROR CODE : {code} Failed to edit comment"
+
+        comments_menu()
 
 
     elif user_input == 0: # [0] Back

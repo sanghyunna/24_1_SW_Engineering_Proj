@@ -96,6 +96,7 @@ def print_comments_list(comments):
     print()
 
 def print_statistics(stats):
+    print("-----------------------------")
     print("Statistics:")
     print(f"Today's Issues: {stats['todayCount']}")
     print(f"Monthly Issues: {stats['monthlyCount']}")
@@ -122,3 +123,14 @@ def print_issue(issue):
     print_array(issue['fixer'])
     print(f"Status: {issue['status']}")
     print(f"Priority: {issue['priority']}")
+
+def print_project(project):
+    print("-----------------------------")
+    print(f"Title: {project['title']}")
+    print(f"Project Owner: {project['projectOwner']}")
+    print("PLs:")
+    print_array(project['pl'])
+    print("Developers:")
+    print_array(project['dev'])
+    print("Testers:")
+    print_array(project['tester'])
