@@ -29,7 +29,7 @@ def print_login_status():
         print("You are currently not logged in.")
     else:
         print(f"You are currently logged in as \"{gv.USERNAME}\"")
-        print(f"Token: {gv.TOKEN}")
+        # print(f"Token: {gv.TOKEN}")
 
 def display_logo():
     print("┌─────────────────────────────┐")
@@ -106,3 +106,19 @@ def print_statistics(stats):
     for priority, count in stats['priorityCount'].items():
         print(f"\t{priority}: {count}")
     print()
+
+def print_issue(issue):
+    print(f"Created At: {issue['createDate']}")
+    print(f"Updated At: {issue['updateDate']}")
+    print(f"Title: {issue['title']}")
+    print(f"Due Date: {issue['dueDate']}")
+    print(f"Content: {issue['content']}")
+    print(f"Affiliation: {gv.PROJECT_CACHE['title']}")
+    print(f"Reporter: ", end="")
+    print_array(issue['reporter'])
+    print(f"Assignee: ", end="")
+    print_array(issue['assignee'])
+    print(f"Fixer: ", end="")
+    print_array(issue['fixer'])
+    print(f"Status: {issue['status']}")
+    print(f"Priority: {issue['priority']}")

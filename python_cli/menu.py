@@ -71,6 +71,7 @@ def projects_menu():
     
     else:
         gv.MSG = "Invalid input"
+        projects_menu()
 
 def project_menu():
     clear_screen()
@@ -293,6 +294,7 @@ def issues_menu():
 
     else:
         gv.MSG = "Invalid input"
+        issues_menu()
         
 def issue_menu():
     clear_screen()
@@ -314,20 +316,7 @@ def issue_menu():
         return
     gv.PROJECT_CACHE = project
 
-    print(f"Created At: {issue['createDate']}")
-    print(f"Updated At: {issue['updateDate']}")
-    print(f"Title: {issue['title']}")
-    print(f"Due Date: {issue['dueDate']}")
-    print(f"Content: {issue['content']}")
-    print(f"Affiliation: {gv.PROJECT_CACHE['title']}")
-    print(f"Reporter: ", end="")
-    print_array(issue['reporter'])
-    print(f"Assignee: ", end="")
-    print_array(issue['assignee'])
-    print(f"Fixer: ", end="")
-    print_array(issue['fixer'])
-    print(f"Status: {issue['status']}")
-    print(f"Priority: {issue['priority']}")
+    print_issue(issue)
     print()
 
     print("[1] Edit Issue")
@@ -397,6 +386,8 @@ def issue_menu():
         else:
             gv.MSG = f"ERROR CODE : {code} Failed to update issue status"
 
+        issue_menu()
+
     elif user_input == 3: # [3] Manage Comments of the Issue
         comments_menu()
 
@@ -416,11 +407,14 @@ def issue_menu():
 
         input("Press Enter to continue...")
 
+        issue_menu()
+
     elif user_input == "*": # Placeholder, "*" is exited in the recieve_input function
         exit()
 
     else:
         gv.MSG = "Invalid input"
+        issue_menu()
 
 def users_menu():
     clear_screen()
@@ -560,7 +554,7 @@ def comments_menu():
     
     else:
         gv.MSG = "Invalid input"
-        return
+        comments_menu()
 
 def search_menu():
     clear_screen()
@@ -613,6 +607,7 @@ def search_menu():
     
     else:
         gv.MSG = "Invalid input"
+        search_menu()
 
 def register_menu():
     clear_screen()
