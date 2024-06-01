@@ -159,17 +159,12 @@ def project_menu():
         clear_screen()
 
 def login_menu():
-    if gv.TOKEN != None:
-        gv.TOKEN = None
-        gv.USERNAME = ""
-        gv.MSG = "Logged out successfully"
-        return
     clear_screen()
     display_logo()
     print("[ Login ]")
     print()
 
-    print("[1] Login")
+    print("[1] Login / Logout")
     print("[2] Register")
     print("[3] Edit User")
     user_input = recieve_input()
@@ -179,15 +174,41 @@ def login_menu():
         register_menu()
         return
     
-    # if user_input == 3: # [3] Edit User
-    #     print("Name: ")
-    #     name = input()
-    #     print("Password: ")
-    #     password = input()
+    if user_input == 3: # [3] Edit User
+        if gv.TOKEN == None:
+            gv.MSG = "You must be logged in to edit user"
+            login_menu()
+            return
+        print("Name: ")
+        name = input()
+        print("Password: ")
+        password = input()
+        code, res = send_patch_request("/user", {
+            "name": name,
+            "password": password,
+            "token": gv.TOKEN
+            })
+        if code == 200:
+            gv.MSG = "User edited successfully, Logged out"
+            gv.TOKEN = None
+            gv.USERNAME = ""            
+
+        elif code == 404:
+            gv.MSG = "ERROR CODE : 404 Not Found"
+        else:
+            gv.MSG = f"ERROR CODE : {code} Failed to edit user"
+        return
+    
 
     if user_input != 1:
         gv.MSG = "Invalid input"
         login_menu()
+        return
+
+    if gv.TOKEN != None:
+        gv.TOKEN = None
+        gv.USERNAME = ""
+        gv.MSG = "Logged out successfully"
         return
 
     print("Username: ")
@@ -344,23 +365,23 @@ def issue_menu():
         issue_id = gv.ISSUE_CACHE["id"]
         print("Title: ")
         title = input()
-        print("Description: ")
-        description = input()
+        print("Due Date: ")
+        due_date = input()
+        print("Content: ")
+        content = input()
+        print("Assignee(split by commas): ")
+        assignee = input().split(", ")
         print("Priority: ")
         priority = input()
         if priority not in ["", "BLOCKER", "CRITICAL", "MAJOR", "MINOR", "TRIVIAL"]:
             gv.MSG = "Invalid priority"
             return
-        print("Status: ")
-        status = input()
-        print("Assignee: ")
-        assignee = input()
         code, res = send_patch_request(f"/issue/{issue_id}", {
             "title": title,
-            "description": description,
+            "dueDate": due_date,
+            "content": content,
+            "assigneeNameArray": assignee,
             "priority": priority,
-            "status": status,
-            "assignee": assignee,
             "token": gv.TOKEN
             })
         if code == 200:
