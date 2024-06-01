@@ -365,23 +365,23 @@ def issue_menu():
         issue_id = gv.ISSUE_CACHE["id"]
         print("Title: ")
         title = input()
-        print("Description: ")
-        description = input()
+        print("Due Date: ")
+        due_date = input()
+        print("Content: ")
+        content = input()
+        print("Assignee(split by commas): ")
+        assignee = input().split(", ")
         print("Priority: ")
         priority = input()
         if priority not in ["", "BLOCKER", "CRITICAL", "MAJOR", "MINOR", "TRIVIAL"]:
             gv.MSG = "Invalid priority"
             return
-        print("Status: ")
-        status = input()
-        print("Assignee: ")
-        assignee = input()
         code, res = send_patch_request(f"/issue/{issue_id}", {
             "title": title,
-            "description": description,
+            "dueDate": due_date,
+            "content": content,
+            "assigneeNameArray": assignee,
             "priority": priority,
-            "status": status,
-            "assignee": assignee,
             "token": gv.TOKEN
             })
         if code == 200:
