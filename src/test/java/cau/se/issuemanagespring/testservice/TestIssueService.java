@@ -89,22 +89,22 @@ public class TestIssueService {
         projectRepository.deleteAll();
         userRepository.deleteAll();
         
-        User sam_user = new User();
-        sam_user.setName("sam");
-        sam_user = userRepository.save(sam_user);
+        User lily_user = new User();
+        lily_user.setName("lily");
+        lily_user = userRepository.save(lily_user);
         
-        Auth sam_auth = new Auth();
-        sam_auth.setUser(sam_user);
-        sam_auth.setPassword("1234");
-        sam_auth.setToken(null);
-        authRepository.save(sam_auth);
+        Auth lily_auth = new Auth();
+        lily_auth.setUser(lily_user);
+        lily_auth.setPassword("1234");
+        lily_auth.setToken(null);
+        authRepository.save(lily_auth);
         
         Project project_a = new Project();
         project_a.setTitle("project A");
-        project_a.setProjectOwner(sam_user);
-        project_a.setPLs(Arrays.asList(sam_user));
-        project_a.setDevs(Arrays.asList(sam_user));
-        project_a.setTesters(Arrays.asList(sam_user));
+        project_a.setProjectOwner(lily_user);
+        project_a.setPLs(Arrays.asList(lily_user));
+        project_a.setDevs(Arrays.asList(lily_user));
+        project_a.setTesters(Arrays.asList(lily_user));
         project_a = projectRepository.save(project_a);
         
         Issue issue1 = new Issue();
@@ -112,9 +112,9 @@ public class TestIssueService {
         issue1.setDueDate(LocalDateTime.parse("2024-06-01T12:00:00"));
         issue1.setContent("content1");
         issue1.setProject(project_a);
-        issue1.setReporter(sam_user);
-        issue1.setAssignee(Arrays.asList(sam_user));
-        issue1.setFixer(sam_user);
+        issue1.setReporter(lily_user);
+        issue1.setAssignee(Arrays.asList(lily_user));
+        issue1.setFixer(lily_user);
         issue1.setStatus(Status.ASSIGNED);
         issue1.setPriority(Priority.MAJOR);
         issue1 = issueRepository.save(issue1);
@@ -124,9 +124,9 @@ public class TestIssueService {
         issue2.setDueDate(LocalDateTime.parse("2024-06-01T12:00:00"));
         issue2.setContent("content2");
         issue2.setProject(project_a);
-        issue2.setReporter(sam_user);
-        issue2.setAssignee(Arrays.asList(sam_user));
-        issue2.setFixer(sam_user);
+        issue2.setReporter(lily_user);
+        issue2.setAssignee(Arrays.asList(lily_user));
+        issue2.setFixer(lily_user);
         issue2.setStatus(Status.ASSIGNED);
         issue2.setPriority(Priority.BLOCKER);
         issue2 = issueRepository.save(issue2);
@@ -134,13 +134,13 @@ public class TestIssueService {
         Comment comment1 = new Comment();
         comment1.setContent("comment1");
         comment1.setIssue(issue1);
-        comment1.setCommentOwner(sam_user);
+        comment1.setCommentOwner(lily_user);
         commentRepository.save(comment1);
         
         Comment comment2 = new Comment();
         comment2.setContent("comment2");
         comment2.setIssue(issue2);
-        comment2.setCommentOwner(sam_user);
+        comment2.setCommentOwner(lily_user);
         commentRepository.save(comment2);
 
         
@@ -157,7 +157,7 @@ public class TestIssueService {
     	new_issue.setTitle("issue3");
     	new_issue.setDueDate("2024-06-01T12:00:00");
     	new_issue.setContent("content");
-    	new_issue.setAssigneeNameArray(Arrays.asList("sam"));
+    	new_issue.setAssigneeNameArray(Arrays.asList("lily"));
     	new_issue.setPriority("MINOR");
     	new_issue.setToken(null);
     	
@@ -166,7 +166,7 @@ public class TestIssueService {
     	
     	
     	// when
-    	issueService.create(projectId, new_issue, "sam");
+    	issueService.create(projectId, new_issue, "lily");
     	List<IssueResponse> issueList = issueService.getAll(projectId);
     	
     	// then
@@ -198,7 +198,7 @@ public class TestIssueService {
 		// then
 		assertThat(issue.getTitle()).isEqualTo("issue1");
 		assertThat(issue.getPriority()).isEqualTo("MAJOR");
-		assertThat(issue.getAssignee()).isEqualTo(Arrays.asList("sam"));
+		assertThat(issue.getAssignee()).isEqualTo(Arrays.asList("lily"));
 		
 
 	}
@@ -297,11 +297,11 @@ public class TestIssueService {
 		authRepository.save(james_auth);
 		
 		// when
-		List<User> userList = issueService.getUsersByUsernames(Arrays.asList("sam", "james"));
+		List<User> userList = issueService.getUsersByUsernames(Arrays.asList("lily", "james"));
 
 		// then
 		assertThat(userList.size()).isEqualTo(2);
-		assertThat(userList.get(0).getName()).isEqualTo("sam");
+		assertThat(userList.get(0).getName()).isEqualTo("lily");
 		assertThat(userList.get(1).getName()).isEqualTo("james");
 
 	}
@@ -331,7 +331,7 @@ public class TestIssueService {
 	
 	@Test
 	@Transactional
-	public void search() throws Exception {
+	public void testSearch() throws Exception {
 		
 		// given
 		List<Project> projectList = projectRepository.findAll();
@@ -351,7 +351,7 @@ public class TestIssueService {
 	
 	@Test
 	@Transactional
-	public void testRepositorySearch() throws Exception { // content빼고 검색
+	public void testSearchByRepository() throws Exception { // content빼고 검색
 	    
 		// given
 		User alex_user = new User();
@@ -402,7 +402,7 @@ public class TestIssueService {
 	    assertThat(searchResultsCaseInsensitive.size()).isEqualTo(1);
 	    assertThat(searchResultsCaseInsensitive.get(0).getContent()).isEqualTo("issue with specific keyword");
 	    
-	    List<Issue> searchByReporter = issueRepository.searchIssues("sam");
+	    List<Issue> searchByReporter = issueRepository.searchIssues("lily");
 	    assertThat(searchByReporter.size()).isEqualTo(2); 
 
 	    List<Issue> searchByAssignee = issueRepository.searchIssues("tom");
@@ -427,23 +427,23 @@ public class TestIssueService {
 	
 	@Test
 	@Transactional
-	public void update() throws Exception {
+	public void testUpdate() throws Exception {
 		
 		// given
 		List<Project> projectList = projectRepository.findAll();
     	long projectId = projectList.get(0).getId();
 		
-		Optional<User> optional_sam = userRepository.findByName("sam");
-		User sam = optional_sam.get();
+		Optional<User> optional_lily = userRepository.findByName("lily");
+		User lily = optional_lily.get();
 		
 		Issue issueToUpdate = new Issue();
 		issueToUpdate.setTitle("issueToUpdate");
 		issueToUpdate.setDueDate(LocalDateTime.parse("2024-06-01T12:00:00"));
 		issueToUpdate.setContent("content");
 		issueToUpdate.setProject(projectRepository.findById(projectId).orElse(null));
-		issueToUpdate.setReporter(sam);
-		issueToUpdate.setAssignee(Arrays.asList(sam));
-		issueToUpdate.setFixer(sam);
+		issueToUpdate.setReporter(lily);
+		issueToUpdate.setAssignee(Arrays.asList(lily));
+		issueToUpdate.setFixer(lily);
 		issueToUpdate.setStatus(Status.ASSIGNED);
 		issueToUpdate.setPriority(Priority.MAJOR);
 		issueToUpdate = issueRepository.save(issueToUpdate);
@@ -452,13 +452,13 @@ public class TestIssueService {
 		update_issue.setTitle("update_issue");
 		update_issue.setDueDate("2024-06-01T12:00:00");
 		update_issue.setContent("updated content");
-		update_issue.setAssigneeNameArray(Arrays.asList("sam"));
+		update_issue.setAssigneeNameArray(Arrays.asList("lily"));
 		update_issue.setPriority("CRITICAL");
 		update_issue.setToken("ISSUE_TOKEN");
 		
 		
 		// when
-		issueService.update(issueToUpdate.getId(), update_issue, "sam");
+		issueService.update(issueToUpdate.getId(), update_issue, "lily");
 		IssueResponse updated = issueService.getById(issueToUpdate.getId());
 		
 		// then
@@ -472,35 +472,32 @@ public class TestIssueService {
 	
 	@Test
 	@Transactional
-	public void updateStatus() throws Exception {  // hibernate가 관리하는 컬렉션???
+	public void testUpdateStatus() throws Exception {  // hibernate가 관리하는 컬렉션???
 		
 		// given
 		List<Project> projectList = projectRepository.findAll();
     	long projectId = projectList.get(0).getId();
 		
-		Optional<User> optional_sam = userRepository.findByName("sam");
-		User sam = optional_sam.get();
-		
-		Issue issueToUpdate = new Issue();
-		issueToUpdate.setTitle("issueToUpdate");
-		issueToUpdate.setDueDate(LocalDateTime.parse("2024-06-01T12:00:00"));
-		issueToUpdate.setContent("content");
-		issueToUpdate.setProject(projectRepository.findById(projectId).orElse(null));
-		issueToUpdate.setReporter(sam);
-		issueToUpdate.setAssignee(Arrays.asList(sam));
-		issueToUpdate.setFixer(sam);
-		issueToUpdate.setStatus(Status.ASSIGNED);
-		issueToUpdate.setPriority(Priority.MAJOR);
-		issueToUpdate = issueRepository.save(issueToUpdate);
+		IssueRequest issueRequest = new IssueRequest();
+		issueRequest.setTitle("issueToUpdate");
+		issueRequest.setDueDate("2024-06-01T12:00:00");
+		issueRequest.setContent("content");
+		issueRequest.setAssigneeNameArray(Arrays.asList("lily"));
+		issueRequest.setPriority("MAJOR");
+		issueRequest.setToken(null);
+		issueService.create(projectId, issueRequest, "lily");
 		
 		IssueStatusRequest issueStatusRequest = new IssueStatusRequest();
 		issueStatusRequest.setStatusName("FIXED");
 		issueStatusRequest.setToken(null);
 		
+		List<Issue> issueList = issueRepository.findAllByProjectId(projectId);
+		Issue issueUpdated = issueList.get(0);
 		
 		// when
-		issueService.updateStatus(issueToUpdate.getId(), issueStatusRequest, "sam");
-		IssueResponse updated = issueService.getById(issueToUpdate.getId());
+		issueService.updateStatus(issueUpdated.getId(), issueStatusRequest, "lily");
+		IssueResponse updated = issueService.getById(issueUpdated.getId());
+		
 		
 		// then
 		assertThat(updated.getStatus()).isEqualTo("FIXED");

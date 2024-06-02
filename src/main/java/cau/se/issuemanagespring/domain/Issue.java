@@ -31,7 +31,7 @@ public class Issue extends BaseTimeEntity{
     @ManyToOne
     private User reporter;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     private List<User> assignee = new ArrayList<>();
 
     @ManyToOne

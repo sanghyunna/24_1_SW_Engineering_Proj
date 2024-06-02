@@ -31,8 +31,10 @@ import cau.se.issuemanagespring.repository.UserRepository;
 import cau.se.issuemanagespring.service.ProjectService;
 import cau.se.issuemanagespring.service.AuthService;
 import cau.se.issuemanagespring.service.IssueService;
+import cau.se.issuemanagespring.service.UserService;
 
 @SpringBootTest
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class TestBrowseIssue {
 	
 	@Autowired
@@ -58,8 +60,11 @@ public class TestBrowseIssue {
 
 	@Autowired
 	private IssueService issueService;
+	
+	@Autowired
+	private UserService userService;
 
-	@BeforeEach
+	@BeforeAll
 	public void setUp() {
 		authRepository.deleteAll();
 		commentRepository.deleteAll();
@@ -67,63 +72,81 @@ public class TestBrowseIssue {
 		projectRepository.deleteAll();
 		userRepository.deleteAll();
 		
-		User harry_user = new User();
-		harry_user.setName("harry");
-		harry_user = userRepository.save(harry_user);
+		UserRequest potter = new UserRequest();
+		potter.setName("potter");
+		potter.setPassword("1234");
+		potter.setToken(null);
+		userService.create(potter);
 		
-		Auth harry_auth = new Auth();
-		harry_auth.setUser(harry_user);
-		harry_auth.setPassword("1234");
-		harry_auth.setToken(null);
-		authRepository.save(harry_auth);
 		
 		ProjectRequest projectRequest = new ProjectRequest();
 		projectRequest.setTitle("project");
-		projectRequest.setPLNameArray(Arrays.asList("harry"));
-		projectRequest.setDevNameArray(Arrays.asList("harry"));
-		projectRequest.setTesterNameArray(Arrays.asList("harry"));
+		projectRequest.setPLNameArray(Arrays.asList("potter"));
+		projectRequest.setDevNameArray(Arrays.asList("potter"));
+		projectRequest.setTesterNameArray(Arrays.asList("potter"));
 		projectRequest.setToken(null);
-		projectService.create(projectRequest, "harry");
+		projectService.create(projectRequest, "potter");
 		Long project_id = projectRepository.findAll().get(0).getId();
 		
 		IssueRequest issueRequest = new IssueRequest();
 		issueRequest.setTitle("issue1");
 		issueRequest.setDueDate("2024-06-11T12:00:00");
 		issueRequest.setContent("content1");
-		issueRequest.setAssigneeNameArray(Arrays.asList("harry"));
+		issueRequest.setAssigneeNameArray(Arrays.asList("potter"));
 		issueRequest.setPriority("MAJOR");
 		issueRequest.setToken(null);
-		issueService.create(project_id, issueRequest, "harry");
+		issueService.create(project_id, issueRequest, "potter");
+		
+		IssueRequest issueRequest_search = new IssueRequest();
+		issueRequest_search.setTitle("i'm still hungry");
+		issueRequest_search.setDueDate("2024-06-11T12:00:00");
+		issueRequest_search.setContent("food content");
+		issueRequest_search.setAssigneeNameArray(Arrays.asList("potter"));
+		issueRequest_search.setPriority("MAJOR");
+		issueRequest_search.setToken(null);
+		issueService.create(project_id, issueRequest_search, "potter");
 		
 	}
 
 	@Test
-    @Transactional
-    public void test() {
-		
-		// primary actor는 ITS에 로그인한다
-		UserRequest userRequest = new UserRequest();
-		userRequest.setName("harry");
-		userRequest.setPassword("1234");
-		TokenResponse tokenResponse = authService.login(userRequest);
+	@Transactional
+    public void testBrowseIssue() {
+
 		
 		// 프로젝트 목록에서 이슈를 조회할 프로젝트 선택
-		Long project_id = projectRepository.findAll().get(0).getId();
-		List<Issue> issueList = issueRepository.findAllByProjectId(project_id);
-		Long issue_id = issueList.get(0).getId();
+		Long project_id = projectService.getAll().get(0).getId();
 		
-		// 이슈목록에서 상세정보를 보고싶은 이슈를 선택하고 서버에 요청
+		
+		// 이슈목록에서 상세정보를 보고싶은 이슈를 선택
+		Long issue_id = issueService.getAll(project_id).get(0).getId();
+		
 		// 서버는 이슈정보 존재하는지 확인후 응답
 		IssueResponse issueResponse = issueService.getById(issue_id);
 		
 		
-		
 		// 테스트 결과 확인
-		assertThat(tokenResponse.getToken()).isNotNull();
 		assertThat(issueResponse.getTitle()).isEqualTo("issue1");
 		assertThat(issueResponse.getContent()).isEqualTo("content1");
 		assertThat(issueResponse.getPriority()).isEqualTo("MAJOR");
         
 	}
+	
+	@Test
+	@Transactional
+	public void testBrowseIssueBySearch() {
+		
+		// 이슈를 검색할 프로젝트 선택
+		Long projectId = projectService.getAll().get(0).getId();
+				
+		// 특정 검색어와 관련된 이슈들를 서버에 요청
+		List<IssueResponse> issue_hungry = issueService.search(projectId, "hungry");
+				
+		// 테스트 결과 확인
+		assertThat(issue_hungry.size()).isEqualTo(1);
+		assertThat(issue_hungry.get(0).getTitle()).isEqualTo("i'm still hungry");
+		
+	}
+	
+	
 
 }

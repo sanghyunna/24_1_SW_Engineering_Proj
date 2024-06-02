@@ -22,6 +22,8 @@ import cau.se.issuemanagespring.repository.AuthRepository;
 import cau.se.issuemanagespring.repository.UserRepository;
 import cau.se.issuemanagespring.dto.UserRequest;
 import cau.se.issuemanagespring.service.UserService;
+import cau.se.issuemanagespring.dto.ProjectResponse;
+import cau.se.issuemanagespring.dto.ProjectRequest;
 import cau.se.issuemanagespring.domain.User;
 import cau.se.issuemanagespring.dto.UserResponse;
 import cau.se.issuemanagespring.domain.Auth;
@@ -30,7 +32,6 @@ import cau.se.issuemanagespring.dto.TokenRequest;
 import cau.se.issuemanagespring.dto.TokenResponse;
 import cau.se.issuemanagespring.service.AuthService;
 import cau.se.issuemanagespring.service.ProjectService;
-import cau.se.issuemanagespring.dto.ProjectRequest;
 
 
 
@@ -38,6 +39,7 @@ import cau.se.issuemanagespring.dto.ProjectRequest;
 
 
 @SpringBootTest
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class TestManageProject {
 	
 	@Autowired
@@ -64,7 +66,7 @@ public class TestManageProject {
 	@Autowired
 	private ProjectService projectService;
 
-	@BeforeEach
+	@BeforeAll
 	public void setUp() {
 		authRepository.deleteAll();
         commentRepository.deleteAll();
@@ -72,47 +74,79 @@ public class TestManageProject {
         projectRepository.deleteAll();
         userRepository.deleteAll();
 		
-        User admin_user = new User();
-        admin_user.setName("admin");
-        admin_user = userRepository.save(admin_user);
-        
-        Auth admin_auth = new Auth();
-        admin_auth.setUser(admin_user);
-        admin_auth.setPassword("1234");
-        admin_auth.setToken(null);
-        authRepository.save(admin_auth);
+        UserRequest gon = new UserRequest();
+        gon.setName("gon");
+        gon.setPassword("1234");
+		userService.create(gon);
+		
+		ProjectRequest projectRequest = new ProjectRequest();
+		projectRequest.setTitle("project");
+		projectRequest.setPLNameArray(Arrays.asList("gon"));
+		projectRequest.setDevNameArray(Arrays.asList("gon"));
+		projectRequest.setTesterNameArray(Arrays.asList("gon"));
+		projectRequest.setToken(null);
+		projectService.create(projectRequest, "gon");
 		
 		
 	}
 	
 	@Test
 	@Transactional
-	public void test() {
+	public void testCreateProject() {
 		
-		// admin은 ITS에 로그인한다
+		// 허가된 사용자가 로그인 시도
 		UserRequest userRequest = new UserRequest();
-		userRequest.setName("admin");
+		userRequest.setName("gon");
 		userRequest.setPassword("1234");
 		TokenResponse tokenResponse = authService.login(userRequest);
 		
-		// 프로젝트를 생성을 요청한다
+		// 사용자가 프로젝트 정보를 입력한다
 		ProjectRequest projectRequest = new ProjectRequest();
 		projectRequest.setTitle("new project");
-		projectRequest.setPLNameArray(Arrays.asList("admin"));
-		projectRequest.setDevNameArray(Arrays.asList("admin"));
-		projectRequest.setTesterNameArray(Arrays.asList("admin"));
+		projectRequest.setPLNameArray(Arrays.asList("gon"));
+		projectRequest.setDevNameArray(Arrays.asList("gon"));
+		projectRequest.setTesterNameArray(Arrays.asList("gon"));
 		projectRequest.setToken(null);
 		
-		// 서버는 요청을 확인하고 프로젝트를 생성한다
-		// 서버는 admin의 프로젝트 목록에 생성된 프로젝트를 추가한다 
-		projectService.create(projectRequest, "admin");
-		
+		// 서버에 프로젝트 생성을 요청한다
+		projectService.create(projectRequest, "gon");
+		List<ProjectResponse> projectList = projectService.getAll();
 		
 		// 테스트 결과 확인
 		assertThat(tokenResponse.getToken()).isNotNull();
-		List<Project> projectList = projectRepository.findAll();
-		assertThat(projectList.get(0).getProjectOwner().getName()).isEqualTo("admin");
-		assertThat(projectList.get(0).getTitle()).isEqualTo("new project");
+		assertThat(projectList.size()).isEqualTo(2);
+		assertThat(projectList.get(1).getProjectOwner()).isEqualTo("gon");
+		assertThat(projectList.get(1).getTitle()).isEqualTo("new project");
+		
+	}
+	
+	@Test
+	@Transactional
+	public void testModifyProject() {
+		
+		// 허가된 사용자가 로그인 시도
+		UserRequest userRequest = new UserRequest();
+		userRequest.setName("gon");
+		userRequest.setPassword("1234");
+		TokenResponse tokenResponse = authService.login(userRequest);
+		
+		// 사용자가 수정할 프로젝트를 선택
+		long project_id = projectService.getAll().get(0).getId();
+		
+		// 사용자가 수정할 정보를 입력
+		ProjectRequest projectRequest = new ProjectRequest();
+		projectRequest.setTitle("modified project");
+		projectRequest.setPLNameArray(Arrays.asList("gon"));
+		projectRequest.setDevNameArray(Arrays.asList("gon"));
+		projectRequest.setTesterNameArray(Arrays.asList("gon"));
+		projectRequest.setToken(null);
+		
+		// 서버에 프로젝트 수정을 요청
+		ProjectResponse modifiedProject = projectService.update(project_id, projectRequest, "gon");
+		
+		// 테스트 결과 확인
+		assertThat(tokenResponse.getToken()).isNotNull();
+		assertThat(modifiedProject.getTitle()).isEqualTo("modified project");
 		
 	}
 

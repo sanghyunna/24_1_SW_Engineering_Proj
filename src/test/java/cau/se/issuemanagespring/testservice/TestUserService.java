@@ -18,7 +18,9 @@ import cau.se.issuemanagespring.dto.UserResponse;
 import cau.se.issuemanagespring.domain.Project;
 import cau.se.issuemanagespring.dto.ProjectRequest;
 import cau.se.issuemanagespring.dto.ProjectResponse;
+import cau.se.issuemanagespring.dto.TokenResponse;
 import cau.se.issuemanagespring.service.ProjectService;
+import cau.se.issuemanagespring.service.AuthService;
 import cau.se.issuemanagespring.repository.ProjectRepository;
 import cau.se.issuemanagespring.repository.IssueRepository;
 import cau.se.issuemanagespring.repository.CommentRepository;
@@ -53,6 +55,9 @@ public class TestUserService {
 	
 	@Autowired
 	private AuthRepository authRepository;
+	
+	@Autowired
+	private AuthService authService;
 	
 	@BeforeEach
 	public void setUp() {
@@ -115,27 +120,30 @@ public class TestUserService {
 	public void testUpdate() throws Exception {
 
 		// given
-		User alex_user = new User();
-		alex_user.setName("alex");
-		alex_user = userRepository.save(alex_user);
+		User emma_user = new User();
+		emma_user.setName("emma");
+		emma_user = userRepository.save(emma_user);
 		
-		Auth alex_auth = new Auth();
-		alex_auth.setUser(alex_user);
-		alex_auth.setPassword("1234");
-		alex_auth.setToken(null);
-		authRepository.save(alex_auth);
+		Auth emma_auth = new Auth();
+		emma_auth.setUser(emma_user);
+		emma_auth.setPassword("1234");
+		emma_auth.setToken(null);
+		authRepository.save(emma_auth);
 		
 		UserRequest userRequest = new UserRequest();
 		userRequest.setName("new name");
 		userRequest.setPassword("4321");
 		userRequest.setToken(null);
+		
 				
 		// when
-		UserResponse updatedUser = userService.update(userRequest, "alex");
+		UserResponse updatedUser = userService.update(userRequest, "emma");
+		TokenResponse tokenResponse = authService.login(userRequest);
 
 		// then
 		assertThat(updatedUser.getName()).isEqualTo("new name");
-		assertThat(updatedUser.getId()).isEqualTo(alex_user.getId());
+		assertThat(updatedUser.getId()).isEqualTo(emma_user.getId());
+		assertThat(tokenResponse.getToken()).isNotNull();
 		
 	}
 	

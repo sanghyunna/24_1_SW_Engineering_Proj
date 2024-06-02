@@ -26,15 +26,20 @@ import cau.se.issuemanagespring.service.IssueService;
 import cau.se.issuemanagespring.service.CommentService;
 import cau.se.issuemanagespring.domain.Auth;
 import cau.se.issuemanagespring.domain.User;
+import cau.se.issuemanagespring.domain.Project;
+import cau.se.issuemanagespring.domain.Issue;
 import cau.se.issuemanagespring.dto.IssueRequest;
 import cau.se.issuemanagespring.dto.ProjectRequest;
 import cau.se.issuemanagespring.dto.TokenResponse;
 import cau.se.issuemanagespring.dto.UserRequest;
 import cau.se.issuemanagespring.dto.CommentRequest;
+import cau.se.issuemanagespring.dto.ProjectResponse;
+import cau.se.issuemanagespring.dto.IssueResponse;
 import cau.se.issuemanagespring.domain.Issue;
 
 
 @SpringBootTest
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class TestManageComment {
 	
 	@Autowired
@@ -64,7 +69,8 @@ public class TestManageComment {
 	@Autowired
 	private CommentService commentService;
 
-	@BeforeEach
+	@BeforeAll
+	@Transactional
 	public void setUp() {
 		authRepository.deleteAll();
 		commentRepository.deleteAll();
@@ -72,63 +78,98 @@ public class TestManageComment {
 		projectRepository.deleteAll();
 		userRepository.deleteAll();
 		
-		User actor_user = new User();
-		actor_user.setName("actor");
-		actor_user = userRepository.save(actor_user);
+		User ron_user = new User();
+		ron_user.setName("ron");
+		ron_user = userRepository.save(ron_user);
 		
-		Auth actor_auth = new Auth();
-		actor_auth.setUser(actor_user);
-		actor_auth.setPassword("1234");
-		actor_auth.setToken(null);
-		authRepository.save(actor_auth);
+		Auth ron_auth = new Auth();
+		ron_auth.setUser(ron_user);
+		ron_auth.setPassword("1234");
+		ron_auth.setToken(null);
+		authRepository.save(ron_auth);
 		
 		ProjectRequest projectRequest = new ProjectRequest();
-		projectRequest.setTitle("project");
-		projectRequest.setPLNameArray(Arrays.asList("actor"));
-		projectRequest.setDevNameArray(Arrays.asList("actor"));
-		projectRequest.setTesterNameArray(Arrays.asList("actor"));
+		projectRequest.setTitle("project by ron");
+		projectRequest.setPLNameArray(Arrays.asList("ron"));
+		projectRequest.setDevNameArray(Arrays.asList("ron"));
+		projectRequest.setTesterNameArray(Arrays.asList("ron"));
 		projectRequest.setToken(null);
-		projectService.create(projectRequest, "actor");
-		Long project_id = projectRepository.findAll().get(0).getId();
+		projectService.create(projectRequest, "ron");
+		long project_id = projectRepository.findAll().get(0).getId();
 		
 		IssueRequest issueRequest = new IssueRequest();
-		issueRequest.setTitle("issue1");
+		issueRequest.setTitle("issue1 by ron");
 		issueRequest.setDueDate("2024-06-11T12:00:00");
-		issueRequest.setContent("content1");
-		issueRequest.setAssigneeNameArray(Arrays.asList("actor"));
+		issueRequest.setContent("content1 by ron");
+		issueRequest.setAssigneeNameArray(Arrays.asList("ron"));
 		issueRequest.setPriority("MAJOR");
 		issueRequest.setToken(null);
-		issueService.create(project_id, issueRequest, "actor");
+		issueService.create(project_id, issueRequest, "ron");
+		long issue_id = issueRepository.findAll().get(0).getId();
+		
+		CommentRequest comment = new CommentRequest();
+        comment.setContent("comment1 by ron");
+        comment.setToken(null);
+        commentService.create(comment, issue_id, "ron");
 	}
 	
 	
 	@Test
-	public void test() {
+	@Transactional
+	public void testCreateComment() {
 		
-		// primary actor는 ITS에 로그인
+		// 허가된 사용자가 로그인 시도
 		UserRequest userRequest = new UserRequest();
-		userRequest.setName("actor");
+		userRequest.setName("ron");
 		userRequest.setPassword("1234");
 		TokenResponse tokenResponse = authService.login(userRequest);
 		
-		// 생성되어있는 이슈 조회
-		Long project_id = projectRepository.findAll().get(0).getId();
-		List<Issue> issueList = issueRepository.findAllByProjectId(project_id);
-		Long issue_id = issueList.get(0).getId();
+		// 서버에 코멘트를 남길 이슈를 요청
+		long project_id = projectRepository.findAll().get(0).getId();
+		long issue_id = issueRepository.findAll().get(0).getId();
 		
-		// 이슈에 comment 등록 요청
-		// 서버는 요청을 확인후 comment 등록
+		// 사용자가 코멘트의 정보를 입력
 		CommentRequest commentRequest = new CommentRequest();
-		commentRequest.setContent("comment by actor");
+		commentRequest.setContent("new comment by ron");
 		commentRequest.setToken(null);
-		commentService.create(commentRequest, issue_id, "actor");
+		
+		// 서버에 코멘트 생성을 요청
+		commentService.create(commentRequest, issue_id, "ron");
 		
 		
 		// 테스트 결과확인
 		assertThat(tokenResponse.getToken()).isNotNull();
-		assertThat(commentRepository.findAllByIssueId(issue_id).size()).isEqualTo(1);
-		assertThat(commentRepository.findAllByIssueId(issue_id).get(0).getContent()).isEqualTo("comment by actor");
+		assertThat(commentRepository.findAllByIssueId(issue_id).size()).isEqualTo(2);
+		assertThat(commentRepository.findAllByIssueId(issue_id).get(1).getContent()).isEqualTo("new comment by ron");
 		
+	}
+	
+	
+	@Test
+	@Transactional
+	public void testModifyComment() {
+		
+		// 허가된 사용자가 로그인 시도
+		UserRequest userRequest = new UserRequest();
+		userRequest.setName("ron");
+		userRequest.setPassword("1234");
+		TokenResponse tokenResponse = authService.login(userRequest);
+		
+		// 서버에 수정할 코멘트 요청
+		long issue_id = issueRepository.findAll().get(0).getId();
+		long comment_id = commentRepository.findAll().get(0).getId();
+		
+		// 사용자가 코멘트의 수정사항 입력
+		CommentRequest commentRequest = new CommentRequest();
+		commentRequest.setContent("modified comment by ron");
+		commentRequest.setToken(null);
+		
+		// 서버에 코멘트 수정을 요청
+		commentService.update(comment_id, commentRequest, "ron");
+		
+		// 테스트 결과 확인
+		assertThat(tokenResponse.getToken()).isNotNull();
+		assertThat(commentRepository.findAllByIssueId(issue_id).get(0).getContent()).isEqualTo("modified comment by ron");
 	}
 
 }
